@@ -6,7 +6,7 @@
 
     <groupId>nl.jessenagel.pusher</groupId>
     <artifactId>HiGHSJava</artifactId>
-    <version>1.0.0-ALPHA</version>
+    <version>0.0.1-ALPHA</version>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
