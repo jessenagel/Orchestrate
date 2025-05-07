@@ -29,16 +29,6 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          cache: maven
-      - name: Download Maven
-        run: |
-          curl -sL https://downloads.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.zip -o maven.zip
-          apt-get update
-          apt-get -y install unzip
-          unzip -d /usr/share maven.zip
-          rm maven.zip
-          ln -s /usr/share/apache-maven-3.9.6/bin/mvn /usr/bin/mvn
-          echo "M2_HOME=/usr/share/apache-maven-3.9.6" | tee -a /etc/environment
       - name: Install HiGHS
         run: |
           curl -sL https://github.com/JuliaBinaryWrappers/HiGHSstatic_jll.jl/releases/download/HiGHSstatic-v1.10.0%2B0/HiGHSstatic.v1.10.0.x86_64-linux-gnu-cxx03.tar.gz -o highs.tar.gz
