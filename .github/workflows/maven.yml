@@ -29,7 +29,6 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          cache: maven
       - name: Install HiGHS
         run: |
           curl -sL https://github.com/JuliaBinaryWrappers/HiGHSstatic_jll.jl/releases/download/HiGHSstatic-v1.10.0%2B0/HiGHSstatic.v1.10.0.x86_64-linux-gnu-cxx03.tar.gz -o highs.tar.gz
