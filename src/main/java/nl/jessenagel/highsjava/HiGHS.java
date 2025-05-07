@@ -20,9 +20,11 @@ public class HiGHS implements Modeler {
     private int varCounter = 0;
     private int constraintCounter = 0;
     private double objectiveValue;
-
+    /**
+     * Constructer which creates a new HiGHS object
+     */
     public HiGHS() {
-        this.name = "HIHGS";
+        this.name = "HiGHS";
         this.constraints = new ArrayList<>();
         this.variables = new ArrayList<>();
         this.solutionValues = new HashMap<>();
