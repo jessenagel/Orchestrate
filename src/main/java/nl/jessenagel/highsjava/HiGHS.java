@@ -349,6 +349,7 @@ public class HiGHS implements Modeler {
             //Write the constraints
             fileWriter.write("Subject To\n");
             for (Constraint constraint : constraints) {
+                this.rebalanceConstraint(constraint);
                 if (constraint instanceof HiGHSConstraint constraint_cast) {
                     fileWriter.write(constraint_cast.getName() + ": ");
                     if (constraint_cast.lhs instanceof HiGHSNumExpr expr_cast) {
@@ -482,7 +483,9 @@ public class HiGHS implements Modeler {
             boolean inPrimalSection = false;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
-
+                if (line.equalsIgnoreCase("Infeasible")){
+                    throw new HiGHSException("The model is infeasible");
+                }
                 // Check for the start of the "Primal solution values" section
                 if (line.equalsIgnoreCase("# Primal solution values")) {
                     inPrimalSection = true;
@@ -825,6 +828,26 @@ public class HiGHS implements Modeler {
             System.out.println("Process exited with code: " + exitCode);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Rebalances the constraint by subtracting the right-hand side from the left-hand side.
+     * @param constraint The constraint to be rebalanced.
+     */
+    public void rebalanceConstraint(Constraint constraint){
+        if (constraint instanceof HiGHSConstraint constraint_cast) {
+            if(constraint_cast.lhs instanceof HiGHSNumExpr lhs_cast && constraint_cast.rhs instanceof HiGHSNumExpr rhs_cast){
+                for(int i =0; i<lhs_cast.variables.size(); i++){
+                    if(lhs_cast.variables.get(i) instanceof HiGHSNumVar var_cast){
+                        lhs_cast.coefficients.set(i, lhs_cast.coefficients.get(i) - rhs_cast.coefficients.get(i));
+                    }
+                }
+                lhs_cast.constant = lhs_cast.constant - rhs_cast.constant;
+                constraint_cast.rhs = constant(0);
+            }
+        } else {
+            throw new HiGHSException("Invalid constraint type: " + constraint.getClass());
         }
     }
 
@@ -1247,12 +1270,6 @@ public class HiGHS implements Modeler {
                 this.variables = new ArrayList<>();
                 this.variables.add(expr_cast);
                 this.constant = 0.0;
-            } else if (expr instanceof HiGHSBoolVar expr_cast) {
-                this.coefficients = new ArrayList<>();
-                this.coefficients.add(1.0);
-                this.variables = new ArrayList<>();
-                this.variables.add(expr_cast);
-                this.constant = 0.0;
             } else {
                 throw new HiGHSException("Invalid expression type: " + expr.getClass());
             }
@@ -1458,5 +1475,7 @@ public class HiGHS implements Modeler {
         public void setName(String name) {
             this.name = name;
         }
+
+
     }
 }
