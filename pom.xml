@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>nl.jessenagel.highsjava</groupId>
-    <artifactId>HiGHSJava</artifactId>
-    <version>1.0.0-ALPHA</version>
+    <artifactId>highs-java</artifactId>
+    <version>1.0.5-ALPHA</version>
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
