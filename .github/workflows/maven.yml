@@ -35,9 +35,9 @@ jobs:
           mkdir /opt/HiGHS
           tar -xf highs.tar.gz -C /opt/HiGHS
           rm highs.tar.gz
-          output=$(ls -la /opt/HiGHS)
-          echo "$output" 
-          ln -s /opt/HiGHS/bin/highs /usr/bin/highs
+          mkdir -p $HOME/bin
+          ln -s /opt/HiGHS/bin/highs $HOME/bin/highs
+          echo "$HOME/bin" >> $GITHUB_PATH
       - name: Build with Maven
         run: mvn -B package --file pom.xml
 
