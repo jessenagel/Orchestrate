@@ -94,7 +94,13 @@ public class HiGHS implements Modeler {
      */
     @Override
     public IntExpr sum(int v, IntExpr e) {
-        return null;
+        if(e instanceof HiGHSIntExpr expr_cast) {
+            HiGHSIntExpr sum = new HiGHSIntExpr(expr_cast);
+            sum.constant += v;
+            return sum;
+        } else {
+            throw new HiGHSException("Invalid expression type for sum: " + e.getClass());
+        }
     }
 
     /**
@@ -106,7 +112,7 @@ public class HiGHS implements Modeler {
      */
     @Override
     public IntExpr sum(IntExpr e, int v) {
-        return null;
+        return sum(v,e);
     }
 
     /**
@@ -128,7 +134,9 @@ public class HiGHS implements Modeler {
             sum.coefficients.addAll(rhs.coefficients);
             return sum;
         }
-        return null;
+        else{
+            throw new HiGHSException("Invalid expression types for sum: " + e1.getClass() + ", " + e2.getClass());
+        }
     }
 
     /**
@@ -140,7 +148,25 @@ public class HiGHS implements Modeler {
      */
     @Override
     public NumExpr sum(double v, NumExpr e) {
-        return null;
+        if(e instanceof HiGHSNumExpr expr_cast) {
+            HiGHSNumExpr sum = new HiGHSNumExpr(expr_cast);
+            expr_cast.constant += v;
+            return sum;
+        } else if(e instanceof HiGHSIntExpr expr_cast) {
+            HiGHSNumExpr sum = new HiGHSNumExpr(expr_cast);
+            sum.constant += v;
+            return sum;
+        } else if(e instanceof HiGHSIntVar expr_cast){
+            HiGHSNumExpr sum = new HiGHSNumExpr(expr_cast);
+            sum.constant += v;
+            return sum;
+        } else if(e instanceof HiGHSNumVar expr_cast){
+            HiGHSNumExpr sum = new HiGHSNumExpr(expr_cast);
+            sum.constant += v;
+            return sum;
+        } else {
+            throw new HiGHSException("Invalid expression type for sum: " + e.getClass());
+        }
     }
 
     /**
@@ -152,7 +178,7 @@ public class HiGHS implements Modeler {
      */
     @Override
     public NumExpr sum(NumExpr e, double v) {
-        return null;
+        return this.sum(v,e);
     }
 
     /**
