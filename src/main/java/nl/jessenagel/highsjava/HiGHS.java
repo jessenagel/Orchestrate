@@ -150,7 +150,7 @@ public class HiGHS implements Modeler {
     public NumExpr sum(double v, NumExpr e) {
         if(e instanceof HiGHSNumExpr expr_cast) {
             HiGHSNumExpr sum = new HiGHSNumExpr(expr_cast);
-            expr_cast.constant += v;
+            sum.constant += v;
             return sum;
         } else if(e instanceof HiGHSIntExpr expr_cast) {
             HiGHSNumExpr sum = new HiGHSNumExpr(expr_cast);
@@ -178,6 +178,7 @@ public class HiGHS implements Modeler {
      */
     @Override
     public NumExpr sum(NumExpr e, double v) {
+        System.out.println(v);
         return this.sum(v,e);
     }
 
@@ -345,7 +346,11 @@ public class HiGHS implements Modeler {
             } else {
                 throw new HiGHSException("Invalid expression type for objective: " + this.objective.expr.getClass());
             }
-            fileWriter.write(this.objective.getConstant() + "\n");
+            if(this.objective.getConstant() >0){
+                fileWriter.write("+ " + this.objective.getConstant() + "\n");
+            }else{
+                fileWriter.write("- " + this.objective.getConstant() + "\n");
+            }
             //Write the constraints
             fileWriter.write("Subject To\n");
             for (Constraint constraint : constraints) {
