@@ -515,6 +515,7 @@ public class HiGHS implements Modeler {
                             if (variable.getName().equals(variableName)) {
 
                                 solutionValues.put(variable, value);
+                                sol
                                 break;
                             }
                         }
