@@ -446,7 +446,10 @@ public class HiGHS implements Modeler {
             //Write the variable type section
             fileWriter.write("Generals\n");
             for (NumVar variable : variables) {
-                if (variable instanceof HiGHSIntVar var_cast) {
+                if (variable instanceof HiGHSBoolVar) {
+                    continue;
+                }
+                if (variable instanceof HiGHSIntVar var_cast ) {
                     fileWriter.write(var_cast.getName() + "\n");
                 }
             }
@@ -508,8 +511,10 @@ public class HiGHS implements Modeler {
                     if (parts.length == 2) {
                         String variableName = parts[0];
                         double value = Double.parseDouble(parts[1]);
+                        LOGGER.info(variableName + " = " + value);
                         for (NumVar variable : variables) {
                             if (variable.getName().equals(variableName)) {
+
                                 solutionValues.put(variable, value);
                                 break;
                             }
