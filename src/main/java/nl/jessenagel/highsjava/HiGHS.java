@@ -511,7 +511,7 @@ public class HiGHS implements Modeler {
                     if (parts.length == 2) {
                         String variableName = parts[0];
                         double value = Double.parseDouble(parts[1]);
-                        System.out.println(variableName + " = " + value);
+                        LOGGER.info(variableName + " = " + value);
                         for (NumVar variable : variables) {
                             if (variable.getName().equals(variableName)) {
 
