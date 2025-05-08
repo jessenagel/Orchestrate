@@ -105,4 +105,50 @@ class HiGHSTest {
         assertEquals(4.0, highs.getValue(y), 0.01);
         assertEquals(34.0, highs.getObjValue(), 0.01);
     }
+
+    /**
+     * Test for solving an integer programming model.
+     * This test creates integer variables, constraints, and an objective function,
+     * solves the model, and verifies the solution values and objective value.
+     */
+    @Test
+    void solveIP() {
+        HiGHS highs = new HiGHS();
+        // Declare integer variables x and yf
+        IntVar x = highs.intVar("x");
+        IntVar y = highs.boolVar("y");
+
+        // Declare constraints
+        NumExpr lhs1 = highs.constant(0);
+        lhs1 = highs.sum(lhs1, x);
+        lhs1 = highs.sum(lhs1, highs.prod(2, y));
+        highs.addLe(lhs1, highs.constant(14)).setName("c1");
+
+        NumExpr lhs2 = highs.constant(0);
+        lhs2 = highs.sum(lhs2, highs.prod(3, x));
+        lhs2 = highs.sum(lhs2, highs.prod(-1, y));
+        highs.addGe(lhs2, highs.constant(0));
+
+        NumExpr lsh3 = highs.constant(0);
+        lsh3 = highs.sum(lsh3, x);
+        lsh3 = highs.sum(lsh3, highs.prod(-1, y));
+        highs.addLe(lsh3, highs.constant(2));
+
+        // Add objective function
+        NumExpr objective = highs.constant(0);
+        objective = highs.sum(objective, x);
+        objective = highs.sum(objective, y);
+        objective = highs.sum(objective, 5);
+        highs.addMaximize(objective);
+
+        // Export the model to a file
+        highs.exportModel("test.lp");
+
+        // Solve the model
+        highs.solve();
+        highs.importSol("out.sol");
+        // Get the solution
+        assertEquals(3.0, highs.getValue(x), 0.01);
+        assertEquals(1.0, highs.getValue(y), 0.01);
+    }
 }
