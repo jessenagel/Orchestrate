@@ -345,10 +345,12 @@ public class HiGHS implements Modeler {
             } else {
                 throw new HiGHSException("Invalid expression type for objective: " + this.objective.expr.getClass());
             }
-            if(this.objective.getConstant() >0){
-                fileWriter.write("+ " + this.objective.getConstant() + "\n");
-            }else{
-                fileWriter.write("- " + this.objective.getConstant() + "\n");
+            if (this.objective.getConstant() != 0) {
+                if (this.objective.getConstant() > 0) {
+                    fileWriter.write("+ " + this.objective.getConstant() + "\n");
+                } else {
+                    fileWriter.write("- " + Math.abs(this.objective.getConstant()) + "\n");
+                }
             }
             //Write the constraints
             fileWriter.write("Subject To\n");
