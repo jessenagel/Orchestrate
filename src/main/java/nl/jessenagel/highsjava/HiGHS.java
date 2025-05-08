@@ -178,7 +178,6 @@ public class HiGHS implements Modeler {
      */
     @Override
     public NumExpr sum(NumExpr e, double v) {
-        System.out.println(v);
         return this.sum(v,e);
     }
 
