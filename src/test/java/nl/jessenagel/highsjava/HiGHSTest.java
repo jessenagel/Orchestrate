@@ -235,7 +235,7 @@ class HiGHSTest {
         lhs = highs.sum(lhs, x);
         lhs = highs.sum(lhs, y);
         // Add equality constraint
-        Constraint constraint = highs.addEq(lhs, 10);
+        Constraint constraint = highs.addLe(lhs, highs.constant(10));
         HiGHSConstraint hConstraint = new HiGHSConstraint(constraint);
         // Check the constraint type
         HiGHSNumExpr lhsExpr = new HiGHSNumExpr(hConstraint.lhs);
@@ -259,7 +259,7 @@ class HiGHSTest {
         lhs = highs.sum(lhs, x);
         lhs = highs.sum(lhs, y);
         // Add equality constraint
-        Constraint constraint = highs.addEq(lhs, 10);
+        Constraint constraint = highs.addGe(lhs, highs.constant(10));
         HiGHSConstraint hConstraint = new HiGHSConstraint(constraint);
         // Check the constraint type
         HiGHSNumExpr lhsExpr = new HiGHSNumExpr(hConstraint.lhs);
