@@ -77,8 +77,10 @@ public class HiGHSNumVar implements NumVar {
      */
     @Override
     public void setLB(double lb) {
-        this.lb = lb;
-    }
+        if (lb > this.ub) {
+            throw new IllegalArgumentException("Lower bound cannot be greater than the current upper bound (" + this.ub + ").");
+        }
+        this.lb = lb;    }
 
     /**
      * Sets the upper bound of the numerical variable.
@@ -87,6 +89,9 @@ public class HiGHSNumVar implements NumVar {
      */
     @Override
     public void setUB(double ub) {
+        if (ub < this.lb) {
+            throw new IllegalArgumentException("Upper bound cannot be smaller than the current lower bound (" + this.lb + ").");
+        }
         this.ub = ub;
     }
 

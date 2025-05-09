@@ -164,7 +164,10 @@ public class HiGHSIntVar implements IntVar {
      */
     @Override
     public void setUB(double ub) {
-        // Not implemented
+        if (ub < this.min) {
+            throw new IllegalArgumentException("Upper bound cannot be smaller than the current lower bound (" + this.min + ").");
+        }
+        this.max = (int) ub;
     }
 
     /**

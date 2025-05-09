@@ -98,11 +98,11 @@ public class HiGHSIntExpr implements IntExpr {
 
     @Override
     public void accept(IntExprVisitor visitor) {
-
+        visitor.visit(this);
     }
 
     @Override
     public void accept(NumExprVisitor visitor) {
-
+        visitor.visit(this);
     }
 }
