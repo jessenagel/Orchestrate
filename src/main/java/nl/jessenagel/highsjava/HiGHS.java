@@ -40,8 +40,9 @@ public class HiGHS implements Modeler {
      */
     @Override
     public Constraint addEq(NumExpr lhs, NumExpr rhs) {
-        //TODO: Empty constraint
-        return null;
+        HiGHSConstraint constraint = new HiGHSConstraint(lhs, rhs, ConstraintType.Eq);
+        constraints.add(constraint);
+        return constraint;
     }
 
     /**
@@ -128,10 +129,17 @@ public class HiGHS implements Modeler {
             HiGHSIntExpr lhs = (HiGHSIntExpr) e1;
             HiGHSIntExpr rhs = (HiGHSIntExpr) e2;
             HiGHSIntExpr sum = new HiGHSIntExpr();
+            
             sum.variables.addAll(lhs.variables);
-            sum.variables.addAll(rhs.variables);
-            sum.coefficients.addAll(lhs.coefficients);
-            sum.coefficients.addAll(rhs.coefficients);
+            for(int i =0; i < rhs.variables.size(); i++) {
+                if(!sum.variables.contains(rhs.variables.get(i))) {
+                    sum.variables.add(rhs.variables.get(i));
+                    sum.coefficients.add(rhs.coefficients.get(i));
+                }else{
+                    int index = sum.variables.indexOf(rhs.variables.get(i));
+                    sum.coefficients.set(index, sum.coefficients.get(index) + rhs.coefficients.get(i));
+                }
+            }
             sum.constant = lhs.constant + rhs.constant;
             return sum;
         }
@@ -215,22 +223,41 @@ public class HiGHS implements Modeler {
         } else if (lhs instanceof HiGHSIntExpr lhs_cast && rhs instanceof HiGHSIntExpr rhs_cast) {
             HiGHSIntExpr sum = new HiGHSIntExpr();
             sum.variables.addAll(lhs_cast.variables);
-            sum.variables.addAll(rhs_cast.variables);
             sum.coefficients.addAll(lhs_cast.coefficients);
-            sum.coefficients.addAll(rhs_cast.coefficients);
+            for (int i = 0; i < rhs_cast.variables.size(); i++) {
+                if (!sum.variables.contains(rhs_cast.variables.get(i))) {
+                    sum.variables.add(rhs_cast.variables.get(i));
+                    sum.coefficients.add(rhs_cast.coefficients.get(i));
+                } else {
+                    int index = sum.variables.indexOf(rhs_cast.variables.get(i));
+                    sum.coefficients.set(index, sum.coefficients.get(index) + rhs_cast.coefficients.get(i));
+                }
+            }
             sum.constant = lhs_cast.constant + rhs_cast.constant;
             return sum;
         } else if (lhs instanceof HiGHSIntExpr lhs_cast && rhs instanceof HiGHSNumExpr rhs_cast) {
             HiGHSNumExpr sum = new HiGHSNumExpr(lhs_cast);
-            sum.variables.addAll(rhs_cast.variables);
-            sum.coefficients.addAll(rhs_cast.coefficients);
+            for (int i = 0; i < rhs_cast.variables.size(); i++) {
+                if(!sum.variables.contains(rhs_cast.variables.get(i))) {
+                    sum.variables.add(rhs_cast.variables.get(i));
+                    sum.coefficients.add(rhs_cast.coefficients.get(i));
+                } else {
+                    int index = sum.variables.indexOf(rhs_cast.variables.get(i));
+                    sum.coefficients.set(index, sum.coefficients.get(index) + rhs_cast.coefficients.get(i));
+                }
+            }
             sum.constant += rhs_cast.constant;
             return sum;
         } else if (lhs instanceof HiGHSNumExpr lhs_cast && rhs instanceof HiGHSIntExpr rhs_cast) {
             HiGHSNumExpr sum = new HiGHSNumExpr(lhs_cast);
-            sum.variables.addAll(rhs_cast.variables);
-            for (int i = 0; i < rhs_cast.variables.size(); i++) {
-                sum.coefficients.add(rhs_cast.coefficients.get(i).doubleValue());
+            for(int i = 0; i < rhs_cast.variables.size(); i++) {
+                if(!sum.variables.contains(rhs_cast.variables.get(i))) {
+                    sum.variables.add(rhs_cast.variables.get(i));
+                    sum.coefficients.add((double) rhs_cast.coefficients.get(i));
+                } else {
+                    int index = sum.variables.indexOf(rhs_cast.variables.get(i));
+                    sum.coefficients.set(index, sum.coefficients.get(index) + rhs_cast.coefficients.get(i));
+                }
             }
             sum.constant += rhs_cast.constant;
             return sum;
@@ -851,9 +878,13 @@ public class HiGHS implements Modeler {
     public void rebalanceConstraint(Constraint constraint){
         if (constraint instanceof HiGHSConstraint constraint_cast) {
             if(constraint_cast.lhs instanceof HiGHSNumExpr lhs_cast && constraint_cast.rhs instanceof HiGHSNumExpr rhs_cast){
-                for(int i =0; i<lhs_cast.variables.size(); i++){
-                    if(lhs_cast.variables.get(i) instanceof HiGHSNumVar var_cast){
-                        lhs_cast.coefficients.set(i, lhs_cast.coefficients.get(i) - rhs_cast.coefficients.get(i));
+                for(int i = 0; i < rhs_cast.variables.size(); i++) {
+                    if(!lhs_cast.variables.contains(rhs_cast.variables.get(i))) {
+                        lhs_cast.variables.add(rhs_cast.variables.get(i));
+                        lhs_cast.coefficients.add(-rhs_cast.coefficients.get(i));
+                    } else {
+                        int index = lhs_cast.variables.indexOf(rhs_cast.variables.get(i));
+                        lhs_cast.coefficients.set(index, lhs_cast.coefficients.get(index) - rhs_cast.coefficients.get(i));
                     }
                 }
                 lhs_cast.constant = lhs_cast.constant - rhs_cast.constant;
