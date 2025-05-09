@@ -448,7 +448,14 @@ class HiGHSTest {
         NumExpr rhs = highs.constant(100);
         rhs = highs.sum(rhs, highs.prod(-100, x));
         Constraint constraint = highs.addLe(lhs, rhs);
-        highs.rebalanceConstraint(constraint);
+        constraint = highs.rebalanceConstraint(constraint);
+
+        HiGHSConstraint hConstraint = new HiGHSConstraint(constraint);
+        // Check the constraint type
+        HiGHSNumExpr lhsExpr = new HiGHSNumExpr(hConstraint.lhs);
+        HiGHSNumExpr rhsExpr = new HiGHSNumExpr(hConstraint.rhs);
+        assertEquals(" + 1.0 y + 100.0 x + 0.0", lhsExpr.toString());
+        assertEquals(" + 100.0", rhsExpr.toString());
     }
 
     @Test
