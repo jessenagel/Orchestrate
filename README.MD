@@ -63,7 +63,7 @@ public class Example {
 ## Roadmap
 Currently, this API works by generating a `.lp` file and calling the HiGHS binary to solve the problem.
 A more efficient approach would be to use the HiGHS C++ API directly from Java.
-The HiGHS4j project, which provides a Java interface to the HiGHS C++ API, does this but was not compatible with my requirements. You can learn more about HiGHS4j at [HiGHS4j GitHub repository](https://github.com/ERGO-Code/HiGHS4j).
+The HiGHS4j project, which provides a Java interface to the HiGHS C++ API, does this but was not compatible with my requirements.
 Therefore, I decided to create this project.
 ## License
 This project is licensed under the MIT License. See the LICENSE file for details.
