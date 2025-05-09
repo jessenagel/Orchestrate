@@ -6,7 +6,7 @@
 
     <groupId>nl.jessenagel.highsjava</groupId>
     <artifactId>highs-java</artifactId>
-    <version>1.0.9-ALPHA</version>
+    <version>1.0.10-ALPHA</version>
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
