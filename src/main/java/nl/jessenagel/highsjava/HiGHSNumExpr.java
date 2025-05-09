@@ -36,32 +36,7 @@ public class HiGHSNumExpr implements NumExpr {
      */
     public HiGHSNumExpr(NumExpr expr) {
         name = expr.getName() + "_" + HiGHSCounter.getNextVarCounter();
-        if (expr instanceof HiGHSNumExpr expr_cast) {
-            this.coefficients = new ArrayList<>(expr_cast.coefficients);
-            this.variables = new ArrayList<>(expr_cast.variables);
-            this.constant = expr_cast.constant;
-        } else if (expr instanceof HiGHSIntExpr expr_cast) {
-            this.coefficients = new ArrayList<>();
-            for (Integer value : expr_cast.coefficients) {
-                this.coefficients.add(value.doubleValue());
-            }
-            this.variables = new ArrayList<>(expr_cast.variables);
-            this.constant = (double) expr_cast.constant;
-        } else if (expr instanceof HiGHSIntVar expr_cast) {
-            this.coefficients = new ArrayList<>();
-            this.coefficients.add(1.0);
-            this.variables = new ArrayList<>();
-            this.variables.add(expr_cast);
-            this.constant = 0.0;
-        } else if (expr instanceof HiGHSNumVar expr_cast) {
-            this.coefficients = new ArrayList<>();
-            this.coefficients.add(1.0);
-            this.variables = new ArrayList<>();
-            this.variables.add(expr_cast);
-            this.constant = 0.0;
-        } else {
-            throw new HiGHSException("Invalid expression type: " + expr.getClass());
-        }
+        expr.accept(new HiGHSNumExprVisitor(this));
     }
 
     /**
@@ -76,6 +51,21 @@ public class HiGHSNumExpr implements NumExpr {
         this.constant = 0.0;
         this.variables.add(var);
         this.coefficients.add(1.0);
+    }
+
+    /**
+     * Constructs a new HiGHSNumExpr with no variables, coefficients, or constant.
+     */
+    HiGHSNumExpr() {
+        this.name = "NumExpr_" + HiGHSCounter.getNextVarCounter();
+        this.variables = new ArrayList<>();
+        this.coefficients = new ArrayList<>();
+        this.constant = 0.0;
+    }
+
+    @Override
+    public void accept(NumExprVisitor visitor) {
+        visitor.visit(this);
     }
 
     /**
@@ -96,16 +86,6 @@ public class HiGHSNumExpr implements NumExpr {
     @Override
     public void setName(String name) {
         this.name = name;
-    }
-
-    /**
-     * Constructs a new HiGHSNumExpr with no variables, coefficients, or constant.
-     */
-    HiGHSNumExpr() {
-        this.name = "NumExpr_" + HiGHSCounter.getNextVarCounter();
-        this.variables = new ArrayList<>();
-        this.coefficients = new ArrayList<>();
-        this.constant = 0.0;
     }
 
     @Override

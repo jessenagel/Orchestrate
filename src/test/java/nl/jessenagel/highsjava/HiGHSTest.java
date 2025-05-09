@@ -132,8 +132,12 @@ class HiGHSTest {
         NumExpr lsh3 = highs.constant(0);
         lsh3 = highs.sum(lsh3, x);
         lsh3 = highs.sum(lsh3, highs.prod(-1, y));
-        highs.addLe(lsh3, highs.constant(2));
+        Constraint constraint = highs.addLe(lsh3, highs.constant(2));
+        System.out.println(constraint);
 
+        highs.rebalanceConstraint(constraint);
+
+        System.out.println(constraint);
         // Add objective function
         NumExpr objective = highs.constant(0);
         objective = highs.sum(objective, x);

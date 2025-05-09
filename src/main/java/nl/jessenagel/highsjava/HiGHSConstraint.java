@@ -47,6 +47,11 @@ public class HiGHSConstraint implements Constraint {
         this.name = "Constraint_" + HiGHSCounter.getNextConstraintCounter();
     }
 
+    public HiGHSConstraint(Constraint constraint) {
+        this.name = constraint.getName() + "_" + HiGHSCounter.getNextConstraintCounter();
+        constraint.accept(new HiGHSConstraintVisitor(this));
+    }
+
     /**
      * Gets the name of the constraint.
      *
@@ -80,5 +85,32 @@ public class HiGHSConstraint implements Constraint {
         }
         result = result + rhs.toString();
         return result;
+    }
+
+    @Override
+    public void accept(NumExprVisitor visitor) {
+        if (lhs != null) {
+            lhs.accept(visitor);
+        }
+        if (rhs != null) {
+            rhs.accept(visitor);
+        }
+        visitor.visit(this);
+    }
+
+    @Override
+    public void accept(IntExprVisitor visitor) {
+        if (lhs != null) {
+            lhs.accept(visitor);
+        }
+        if (rhs != null) {
+            rhs.accept(visitor);
+        }
+        visitor.visit(this);
+    }
+
+    @Override
+    public void accept(ConstraintVisitor visitor) {
+        visitor.visit(this);
     }
 }

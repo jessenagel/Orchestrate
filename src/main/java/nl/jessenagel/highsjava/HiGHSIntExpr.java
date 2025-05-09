@@ -69,14 +69,15 @@ public class HiGHSIntExpr implements IntExpr {
      */
     HiGHSIntExpr(IntExpr expr) {
         this.name = expr.getName() + "_" + HiGHSCounter.getNextVarCounter();
-        if (expr instanceof HiGHSIntExpr expr_cast) {
-            this.coefficients = new ArrayList<>(expr_cast.coefficients);
-            this.variables = new ArrayList<>(expr_cast.variables);
-            this.constant = expr_cast.constant;
-        }
-        if (expr instanceof HiGHSNumExpr expr_cast) {
-            throw new HiGHSException("Invalid expression type, converting NumExpr to IntExpr is not defined: " + expr.getClass() + ", " + expr_cast.getClass());
-        }
+        expr.accept(new HiGHSIntExprVisitor(this));
+//        if (expr instanceof HiGHSIntExpr expr_cast) {
+//            this.coefficients = new ArrayList<>(expr_cast.coefficients);
+//            this.variables = new ArrayList<>(expr_cast.variables);
+//            this.constant = expr_cast.constant;
+//        }
+//        if (expr instanceof HiGHSNumExpr expr_cast) {
+//            throw new HiGHSException("Invalid expression type, converting NumExpr to IntExpr is not defined: " + expr.getClass() + ", " + expr_cast.getClass());
+//        }
     }
 
     @Override
@@ -92,5 +93,16 @@ public class HiGHSIntExpr implements IntExpr {
         }
         result.append("+ ").append(constant);
         return result.toString();
+    }
+
+
+    @Override
+    public void accept(IntExprVisitor visitor) {
+
+    }
+
+    @Override
+    public void accept(NumExprVisitor visitor) {
+
     }
 }

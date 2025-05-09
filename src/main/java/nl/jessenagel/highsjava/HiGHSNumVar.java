@@ -99,4 +99,9 @@ public class HiGHSNumVar implements NumVar {
     public void setName(String name) {
         this.name = name;
     }
+
+    @Override
+    public void accept(NumExprVisitor visitor) {
+        visitor.visit(this);
+    }
 }

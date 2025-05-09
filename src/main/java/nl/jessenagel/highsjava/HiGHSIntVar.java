@@ -178,4 +178,11 @@ public class HiGHSIntVar implements IntVar {
     public String toString() {
         return name;
     }
+
+    @Override
+    public void accept(NumExprVisitor visitor) {
+        visitor.visit(this);
+    }
+
+
 }
