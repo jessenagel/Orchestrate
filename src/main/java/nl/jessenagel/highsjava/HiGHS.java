@@ -930,6 +930,21 @@ public class HiGHS implements Modeler {
         public void setName(String name) {
             this.name = name;
         }
+
+        @Override
+        public String toString() {
+            String result = name + ": ";
+            result = result + lhs.toString() + " ";
+            if (type == ConstraintType.Eq) {
+                result = result + "= ";
+            } else if (type == ConstraintType.Le) {
+                result = result + "<= ";
+            } else if (type == ConstraintType.Ge) {
+                result = result + ">= ";
+            }
+            result = result + rhs.toString();
+            return result;
+        }
     }
 
     /**
@@ -1205,6 +1220,11 @@ public class HiGHS implements Modeler {
         public void setName(String name) {
             this.name = name;
         }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 
     /**
@@ -1225,6 +1245,7 @@ public class HiGHS implements Modeler {
             this.max = 1;
             this.min = 0;
         }
+
     }
 
     /**
@@ -1331,6 +1352,21 @@ public class HiGHS implements Modeler {
             this.coefficients = new ArrayList<>();
             this.constant = 0.0;
         }
+
+        @Override
+        public String toString() {
+            StringBuilder result = new StringBuilder(" ");
+            for (int i = 0; i < coefficients.size(); i++) {
+                if (coefficients.get(i) < 0) {
+                    result.append("- ");
+                } else {
+                    result.append("+ ");
+                }
+                result.append(Math.abs(coefficients.get(i))).append(" ").append(variables.get(i).getName()).append(" ");
+            }
+            result.append("+ ").append(constant);
+            return result.toString();
+        }
     }
 
     /**
@@ -1406,6 +1442,21 @@ public class HiGHS implements Modeler {
             if (expr instanceof HiGHSNumExpr expr_cast) {
                 throw new HiGHSException("Invalid expression type, converting NumExpr to IntExpr is not defined: " + expr.getClass() + ", " + expr_cast.getClass());
             }
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder result = new StringBuilder(" ");
+            for (int i = 0; i < coefficients.size(); i++) {
+                if (coefficients.get(i) < 0) {
+                    result.append("- ");
+                } else {
+                    result.append("+ ");
+                }
+                result.append(Math.abs(coefficients.get(i))).append(" ").append(variables.get(i).getName()).append(" ");
+            }
+            result.append("+ ").append(constant);
+            return result.toString();
         }
     }
 
@@ -1489,6 +1540,16 @@ public class HiGHS implements Modeler {
             this.name = name;
         }
 
-
+        @Override
+        public String toString() {
+            StringBuilder result = new StringBuilder(" ");
+            if (sense == ObjectiveSense.Maximize) {
+                result.append("Maximize ");
+            } else {
+                result.append("Minimize ");
+            }
+            result.append(expr.toString());
+            return result.toString();
+        }
     }
 }

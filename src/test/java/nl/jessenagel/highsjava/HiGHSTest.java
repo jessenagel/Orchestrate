@@ -379,4 +379,17 @@ class HiGHSTest {
     @Test
     void rebalanceConstraint() {
     }
+
+    @Test
+    void toStringExpr(){
+        HiGHS highs = new HiGHS();
+        // Declare variables x and y
+        NumVar x = highs.numVar("x");
+        NumVar y = highs.numVar("y");
+        // Declare numerical expression
+        NumExpr lhs1 = highs.constant(0);
+        lhs1 = highs.sum(lhs1, x);
+        lhs1 = highs.sum(lhs1, highs.prod(2, y));
+        assertEquals(" + 1.0 x + 2.0 y + 0.0", lhs1.toString());
+    }
 }
