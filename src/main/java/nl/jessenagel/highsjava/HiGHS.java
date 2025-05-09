@@ -300,7 +300,7 @@ public class HiGHS implements Modeler {
             //Write the constraints
             fileWriter.write("Subject To\n");
             for (Constraint constraint : constraints) {
-                this.rebalanceConstraint(constraint);
+                constraint = rebalanceConstraint(constraint);
                 HiGHSConstraint hiGHSConstraint = new HiGHSConstraint(constraint);
                 HiGHSNumExpr lhs_expr = new HiGHSNumExpr(hiGHSConstraint.lhs);
                 HiGHSNumExpr rhs_expr = new HiGHSNumExpr(hiGHSConstraint.rhs);
@@ -767,8 +767,9 @@ public class HiGHS implements Modeler {
      * Rebalances the constraint by subtracting the right-hand side from the left-hand side.
      *
      * @param constraint The constraint to be rebalanced.
+     * @return The rebalanced constraint with updated left-hand and right-hand sides.
      */
-    public void rebalanceConstraint(Constraint constraint) {
+    public Constraint rebalanceConstraint(Constraint constraint) {
         HiGHSConstraint hiGHSConstraint = new HiGHSConstraint(constraint);
         HiGHSNumExpr lhs_expr = new HiGHSNumExpr(hiGHSConstraint.lhs);
         HiGHSNumExpr rhs_expr = new HiGHSNumExpr(hiGHSConstraint.rhs);
@@ -784,6 +785,7 @@ public class HiGHS implements Modeler {
         }
         hiGHSConstraint.rhs = constant( rhs_expr.constant - lhs_expr.constant);
         lhs_expr.constant = 0.0;
+        return hiGHSConstraint;
     }
 
 
