@@ -378,6 +378,19 @@ class HiGHSTest {
 
     @Test
     void rebalanceConstraint() {
+        HiGHS highs = new HiGHS();
+        // Declare variables x and y
+        NumVar x = highs.numVar("x");
+        NumVar y = highs.numVar("y");
+        // Declare numerical expression
+        NumExpr lhs = highs.constant(0);
+        lhs = highs.sum(lhs, y);
+        NumExpr rhs = highs.constant(100);
+        rhs = highs.sum(rhs, highs.prod(-100, x));
+        Constraint constraint = highs.addLe(lhs, rhs);
+        System.out.println(constraint);
+        highs.rebalanceConstraint(constraint);
+        System.out.println(constraint);
     }
 
     @Test
