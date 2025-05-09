@@ -11,15 +11,15 @@ import java.util.Map;
  */
 public class HiGHS implements Modeler {
 
-    private String name;
-
     private final List<Constraint> constraints;
     private final List<NumVar> variables;
     private final Map<NumVar, Double> solutionValues;
+    private String name;
     private HiGHSObjective objective;
     private int varCounter = 0;
     private int constraintCounter = 0;
     private double objectiveValue;
+
     /**
      * Constructer which creates a new HiGHS object
      */
@@ -95,13 +95,9 @@ public class HiGHS implements Modeler {
      */
     @Override
     public IntExpr sum(int v, IntExpr e) {
-        if(e instanceof HiGHSIntExpr expr_cast) {
-            HiGHSIntExpr sum = new HiGHSIntExpr(expr_cast);
-            sum.constant += v;
-            return sum;
-        } else {
-            throw new HiGHSException("Invalid expression type for sum: " + e.getClass());
-        }
+        HiGHSIntExpr sum = new HiGHSIntExpr(e);
+        sum.constant += v;
+        return sum;
     }
 
     /**
@@ -113,7 +109,7 @@ public class HiGHS implements Modeler {
      */
     @Override
     public IntExpr sum(IntExpr e, int v) {
-        return sum(v,e);
+        return sum(v, e);
     }
 
     /**
@@ -125,27 +121,19 @@ public class HiGHS implements Modeler {
      */
     @Override
     public IntExpr sum(IntExpr e1, IntExpr e2) {
-        if (e1.getClass() == HiGHSIntExpr.class && e2.getClass() == HiGHSIntExpr.class) {
-            HiGHSIntExpr lhs = (HiGHSIntExpr) e1;
-            HiGHSIntExpr rhs = (HiGHSIntExpr) e2;
-            HiGHSIntExpr sum = new HiGHSIntExpr();
-            
-            sum.variables.addAll(lhs.variables);
-            for(int i =0; i < rhs.variables.size(); i++) {
-                if(!sum.variables.contains(rhs.variables.get(i))) {
-                    sum.variables.add(rhs.variables.get(i));
-                    sum.coefficients.add(rhs.coefficients.get(i));
-                }else{
-                    int index = sum.variables.indexOf(rhs.variables.get(i));
-                    sum.coefficients.set(index, sum.coefficients.get(index) + rhs.coefficients.get(i));
-                }
+        HiGHSIntExpr sum = new HiGHSIntExpr(e1);
+        HiGHSIntExpr addition = new HiGHSIntExpr(e2);
+        for (int i = 0; i < addition.variables.size(); i++) {
+            if (!sum.variables.contains(addition.variables.get(i))) {
+                sum.variables.add(addition.variables.get(i));
+                sum.coefficients.add(addition.coefficients.get(i));
+            } else {
+                int index = sum.variables.indexOf(addition.variables.get(i));
+                sum.coefficients.set(index, sum.coefficients.get(index) + addition.coefficients.get(i));
             }
-            sum.constant = lhs.constant + rhs.constant;
-            return sum;
         }
-        else{
-            throw new HiGHSException("Invalid expression types for sum: " + e1.getClass() + ", " + e2.getClass());
-        }
+        sum.constant += addition.constant;
+        return sum;
     }
 
     /**
@@ -157,25 +145,9 @@ public class HiGHS implements Modeler {
      */
     @Override
     public NumExpr sum(double v, NumExpr e) {
-        if(e instanceof HiGHSNumExpr expr_cast) {
-            HiGHSNumExpr sum = new HiGHSNumExpr(expr_cast);
-            sum.constant += v;
-            return sum;
-        } else if(e instanceof HiGHSIntExpr expr_cast) {
-            HiGHSNumExpr sum = new HiGHSNumExpr(expr_cast);
-            sum.constant += v;
-            return sum;
-        } else if(e instanceof HiGHSIntVar expr_cast){
-            HiGHSNumExpr sum = new HiGHSNumExpr(expr_cast);
-            sum.constant += v;
-            return sum;
-        } else if(e instanceof HiGHSNumVar expr_cast){
-            HiGHSNumExpr sum = new HiGHSNumExpr(expr_cast);
-            sum.constant += v;
-            return sum;
-        } else {
-            throw new HiGHSException("Invalid expression type for sum: " + e.getClass());
-        }
+        HiGHSNumExpr sum = new HiGHSNumExpr(e);
+        sum.constant += v;
+        return sum;
     }
 
     /**
@@ -187,7 +159,7 @@ public class HiGHS implements Modeler {
      */
     @Override
     public NumExpr sum(NumExpr e, double v) {
-        return this.sum(v,e);
+        return this.sum(v, e);
     }
 
     /**
@@ -200,69 +172,22 @@ public class HiGHS implements Modeler {
      */
     @Override
     public NumExpr sum(NumExpr e1, NumExpr e2) {
-        NumExpr lhs = e1;
-        NumExpr rhs = e2;
-        if (e1 instanceof NumVar) {
-            HiGHSNumExpr expr = new HiGHSNumExpr();
-            expr.variables.add((NumVar) e1);
-            expr.coefficients.add(1.0);
-            lhs = expr;
-        }
-        if (e2 instanceof NumVar) {
-            HiGHSNumExpr expr = new HiGHSNumExpr();
-            expr.variables.add((NumVar) e2);
-            expr.coefficients.add(1.0);
-            rhs = expr;
-        }
-        if (lhs instanceof HiGHSNumExpr lhs_cast && rhs instanceof HiGHSNumExpr rhs_cast) {
-            HiGHSNumExpr sum = new HiGHSNumExpr(lhs_cast);
-            sum.variables.addAll(rhs_cast.variables);
-            sum.coefficients.addAll(rhs_cast.coefficients);
-            sum.constant += rhs_cast.constant;
-            return sum;
-        } else if (lhs instanceof HiGHSIntExpr lhs_cast && rhs instanceof HiGHSIntExpr rhs_cast) {
-            HiGHSIntExpr sum = new HiGHSIntExpr();
-            sum.variables.addAll(lhs_cast.variables);
-            sum.coefficients.addAll(lhs_cast.coefficients);
-            for (int i = 0; i < rhs_cast.variables.size(); i++) {
-                if (!sum.variables.contains(rhs_cast.variables.get(i))) {
-                    sum.variables.add(rhs_cast.variables.get(i));
-                    sum.coefficients.add(rhs_cast.coefficients.get(i));
-                } else {
-                    int index = sum.variables.indexOf(rhs_cast.variables.get(i));
-                    sum.coefficients.set(index, sum.coefficients.get(index) + rhs_cast.coefficients.get(i));
-                }
+        HiGHSNumExpr sum = new HiGHSNumExpr(e1);
+
+        HiGHSNumExpr addition = new HiGHSNumExpr(e2);
+
+        for (int i = 0; i < addition.variables.size(); i++) {
+            if (!sum.variables.contains(addition.variables.get(i))) {
+                sum.variables.add(addition.variables.get(i));
+                sum.coefficients.add(addition.coefficients.get(i));
+            } else {
+                int index = sum.variables.indexOf(addition.variables.get(i));
+                sum.coefficients.set(index, sum.coefficients.get(index) + addition.coefficients.get(i));
             }
-            sum.constant = lhs_cast.constant + rhs_cast.constant;
-            return sum;
-        } else if (lhs instanceof HiGHSIntExpr lhs_cast && rhs instanceof HiGHSNumExpr rhs_cast) {
-            HiGHSNumExpr sum = new HiGHSNumExpr(lhs_cast);
-            for (int i = 0; i < rhs_cast.variables.size(); i++) {
-                if(!sum.variables.contains(rhs_cast.variables.get(i))) {
-                    sum.variables.add(rhs_cast.variables.get(i));
-                    sum.coefficients.add(rhs_cast.coefficients.get(i));
-                } else {
-                    int index = sum.variables.indexOf(rhs_cast.variables.get(i));
-                    sum.coefficients.set(index, sum.coefficients.get(index) + rhs_cast.coefficients.get(i));
-                }
-            }
-            sum.constant += rhs_cast.constant;
-            return sum;
-        } else if (lhs instanceof HiGHSNumExpr lhs_cast && rhs instanceof HiGHSIntExpr rhs_cast) {
-            HiGHSNumExpr sum = new HiGHSNumExpr(lhs_cast);
-            for(int i = 0; i < rhs_cast.variables.size(); i++) {
-                if(!sum.variables.contains(rhs_cast.variables.get(i))) {
-                    sum.variables.add(rhs_cast.variables.get(i));
-                    sum.coefficients.add((double) rhs_cast.coefficients.get(i));
-                } else {
-                    int index = sum.variables.indexOf(rhs_cast.variables.get(i));
-                    sum.coefficients.set(index, sum.coefficients.get(index) + rhs_cast.coefficients.get(i));
-                }
-            }
-            sum.constant += rhs_cast.constant;
-            return sum;
         }
-        throw new HiGHSException("Invalid expression types for sum: " + e1.getClass() + ", " + e2.getClass());
+        sum.constant += addition.constant;
+        return sum;
+
     }
 
     /**
@@ -351,112 +276,79 @@ public class HiGHS implements Modeler {
                 throw new HiGHSException("Invalid objective sense: " + this.objective.sense);
             }
             //Write the objective function
-            if (this.objective.expr instanceof HiGHSNumExpr expr_cast) {
-                for (int i = 0; i < expr_cast.coefficients.size(); i++) {
-                    if (i != 0) {
+            HiGHSNumExpr expr_cast = new HiGHSNumExpr(this.objective.getExpr());
+            for (int i = 0; i < expr_cast.coefficients.size(); i++) {
+                if (i != 0) {
 
-                        if (expr_cast.coefficients.get(i) < 0) {
-                            fileWriter.write("- ");
-                        } else {
-                            fileWriter.write("+ ");
-                        }
+                    if (expr_cast.coefficients.get(i) < 0) {
+                        fileWriter.write("- ");
+                    } else {
+                        fileWriter.write("+ ");
                     }
-                    fileWriter.write(Math.abs(expr_cast.coefficients.get(i)) + " " + expr_cast.variables.get(i).getName() + " ");
                 }
-            } else if (this.objective.expr instanceof HiGHSIntExpr expr_cast) {
-                for (int i = 0; i < expr_cast.coefficients.size(); i++) {
-                    if (i != 0) {
-                        if (expr_cast.coefficients.get(i) < 0) {
-                            fileWriter.write("- ");
-                        } else {
-                            fileWriter.write("+ ");
-                        }
-                    }
-                    fileWriter.write(Math.abs(expr_cast.coefficients.get(i)) + " " + expr_cast.variables.get(i).getName() + " ");
-                }
-            } else {
-                throw new HiGHSException("Invalid expression type for objective: " + this.objective.expr.getClass());
+                fileWriter.write(Math.abs(expr_cast.coefficients.get(i)) + " " + expr_cast.variables.get(i).getName() + " ");
             }
+
             if (this.objective.getConstant() != 0) {
                 if (this.objective.getConstant() > 0) {
-                    fileWriter.write("+ " + this.objective.getConstant() + "\n");
+                    fileWriter.write("+ " + this.objective.getConstant() );
                 } else {
-                    fileWriter.write("- " + Math.abs(this.objective.getConstant()) + "\n");
+                    fileWriter.write("- " + Math.abs(this.objective.getConstant()) );
                 }
             }
+            fileWriter.write("\n");
             //Write the constraints
             fileWriter.write("Subject To\n");
             for (Constraint constraint : constraints) {
                 this.rebalanceConstraint(constraint);
-                if (constraint instanceof HiGHSConstraint constraint_cast) {
-                    fileWriter.write(constraint_cast.getName() + ": ");
-                    if (constraint_cast.lhs instanceof HiGHSNumExpr expr_cast) {
-                        for (int i = 0; i < expr_cast.coefficients.size(); i++) {
-                            if (i != 0) {
-                                if (expr_cast.coefficients.get(i) < 0) {
-                                    fileWriter.write("- ");
-                                } else {
-                                    fileWriter.write("+ ");
-                                }
-                            }
-                            fileWriter.write(Math.abs(expr_cast.coefficients.get(i)) + " " + expr_cast.variables.get(i).getName() + " ");
+                HiGHSConstraint hiGHSConstraint = new HiGHSConstraint(constraint);
+                HiGHSNumExpr lhs_expr = new HiGHSNumExpr(hiGHSConstraint.lhs);
+                HiGHSNumExpr rhs_expr = new HiGHSNumExpr(hiGHSConstraint.rhs);
+                fileWriter.write(hiGHSConstraint.getName() + ": ");
+                for (int i = 0; i < lhs_expr.coefficients.size(); i++) {
+                    if (i != 0) {
+                        if (lhs_expr.coefficients.get(i) < 0) {
+                            fileWriter.write("- ");
+                        } else {
+                            fileWriter.write("+ ");
                         }
-                    } else if (constraint_cast.lhs instanceof HiGHSIntExpr expr_cast) {
-                        for (int i = 0; i < expr_cast.coefficients.size(); i++) {
-                            if (i != 0) {
-                                if (expr_cast.coefficients.get(i) < 0) {
-                                    fileWriter.write("- ");
-                                } else {
-                                    fileWriter.write("+ ");
-                                }
-                            }
-                            fileWriter.write(Math.abs(expr_cast.coefficients.get(i)) + " " + expr_cast.variables.get(i).getName() + " ");
-                        }
-                    } else {
-                        throw new HiGHSException("Invalid expression type for constraint: " + constraint_cast.lhs.getClass());
                     }
-                    if (constraint_cast.type == ConstraintType.Eq) {
-                        fileWriter.write("= ");
-                    } else if (constraint_cast.type == ConstraintType.Le) {
-                        fileWriter.write("<= ");
-                    } else if (constraint_cast.type == ConstraintType.Ge) {
-                        fileWriter.write(">= ");
-                    } else {
-                        throw new HiGHSException("Invalid constraint type: " + constraint_cast.type);
-                    }
-                    //Write the right hand side
-                    if (constraint_cast.rhs instanceof HiGHSNumExpr expr_cast) {
-                        for (int i = 0; i < expr_cast.coefficients.size(); i++) {
-                            if (expr_cast.coefficients.get(i) < 0) {
-                                fileWriter.write("- ");
-                            } else {
-                                fileWriter.write("+ ");
-                            }
-                            fileWriter.write(Math.abs(expr_cast.coefficients.get(i)) + " " + expr_cast.variables.get(i).getName() + " ");
-                        }
-                    } else if (constraint_cast.rhs instanceof HiGHSIntExpr expr_cast) {
-                        for (int i = 0; i < expr_cast.coefficients.size(); i++) {
-                            if (expr_cast.coefficients.get(i) < 0) {
-                                fileWriter.write("- ");
-                            } else {
-                                fileWriter.write("+ ");
-                            }
-                            fileWriter.write(Math.abs(expr_cast.coefficients.get(i)) + " " + expr_cast.variables.get(i).getName() + " ");
-                        }
-                    } else {
-                        throw new HiGHSException("Invalid expression type for constraint: " + constraint_cast.rhs.getClass());
-
-                    }
-                    if (constraint_cast.rhs instanceof HiGHSNumExpr expr_cast) {
-
-                        fileWriter.write(expr_cast.constant + "\n");
-                    } else if (constraint_cast.rhs instanceof HiGHSIntExpr expr_cast) {
-                        fileWriter.write(expr_cast.constant + "\n");
-                    } else {
-                        throw new HiGHSException("Invalid expression type for constraint: " + constraint_cast.rhs.getClass());
-                    }
+                    fileWriter.write(Math.abs(lhs_expr.coefficients.get(i)) + " " + lhs_expr.variables.get(i).getName() + " ");
                 }
+                if (lhs_expr.constant > 0) {
+                    fileWriter.write("+ " + lhs_expr.constant + " ");
+                } else if (lhs_expr.constant < 0) {
+                    fileWriter.write("- " + Math.abs(lhs_expr.constant) + " ");
+                }
+                //Write the constraint type
+                if (hiGHSConstraint.type == ConstraintType.Eq) {
+                    fileWriter.write("= ");
+                } else if (hiGHSConstraint.type == ConstraintType.Le) {
+                    fileWriter.write("<= ");
+                } else if (hiGHSConstraint.type == ConstraintType.Ge) {
+                    fileWriter.write(">= ");
+                } else {
+                    throw new HiGHSException("Invalid constraint type: " + hiGHSConstraint.type);
+                }
+                //Write the right hand side
+                for (int i = 0; i < rhs_expr.coefficients.size(); i++) {
+                    if (rhs_expr.coefficients.get(i) < 0) {
+                        fileWriter.write("- ");
+                    } else {
+                        fileWriter.write("+ ");
+                    }
+                    fileWriter.write(Math.abs(rhs_expr.coefficients.get(i)) + " " + rhs_expr.variables.get(i).getName() + " ");
+                }
+                if (rhs_expr.constant > 0) {
+                    fileWriter.write("+ " + rhs_expr.constant );
+                } else if (rhs_expr.constant < 0) {
+                    fileWriter.write("- " + Math.abs(rhs_expr.constant) );
+                } else if (rhs_expr.coefficients.isEmpty()) {
+                    fileWriter.write(" 0 ");
+                }
+                fileWriter.write("\n");
             }
+
             //Write the bounds
             fileWriter.write("Bounds\n");
             for (NumVar variable : variables) {
@@ -487,7 +379,7 @@ public class HiGHS implements Modeler {
                 if (variable instanceof HiGHSBoolVar) {
                     continue;
                 }
-                if (variable instanceof HiGHSIntVar var_cast ) {
+                if (variable instanceof HiGHSIntVar var_cast) {
                     fileWriter.write(var_cast.getName() + "\n");
                 }
             }
@@ -524,7 +416,7 @@ public class HiGHS implements Modeler {
             boolean inPrimalSection = false;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
-                if (line.equalsIgnoreCase("Infeasible")){
+                if (line.equalsIgnoreCase("Infeasible")) {
                     throw new HiGHSException("The model is infeasible");
                 }
                 // Check for the start of the "Primal solution values" section
@@ -651,8 +543,8 @@ public class HiGHS implements Modeler {
      * @return The created constant numerical expression.
      */
     public NumExpr constant(int i) {
-        HiGHSIntExpr expr = new HiGHSIntExpr();
-        expr.constant = i;
+        HiGHSNumExpr expr = new HiGHSNumExpr();
+        expr.constant = (double) i;
         return expr;
     }
 
@@ -676,7 +568,7 @@ public class HiGHS implements Modeler {
      * @return The resulting numerical expression.
      */
     public NumExpr prod(int i, NumExpr numExpr) {
-        return prod((double)i, numExpr);
+        return prod((double) i, numExpr);
     }
 
     /**
@@ -860,7 +752,7 @@ public class HiGHS implements Modeler {
         // Write to file and call the solver
         exportModel("out.lp");
         try {
-            ProcessBuilder processBuilder = new ProcessBuilder("highs", "--model_file", "out.lp", "--solution_file", "out.sol");
+            ProcessBuilder processBuilder = new ProcessBuilder("highs", "--model_file", "out.lp", "--solution_file", "out.sol","--write_model_file", "file.lp");
             processBuilder.redirectOutput(new File("out.txt"));
             processBuilder.redirectError(new File("error.txt"));
             Process process = processBuilder.start();
@@ -873,714 +765,26 @@ public class HiGHS implements Modeler {
 
     /**
      * Rebalances the constraint by subtracting the right-hand side from the left-hand side.
+     *
      * @param constraint The constraint to be rebalanced.
      */
-    public void rebalanceConstraint(Constraint constraint){
-        if (constraint instanceof HiGHSConstraint constraint_cast) {
-            if(constraint_cast.lhs instanceof HiGHSNumExpr lhs_cast && constraint_cast.rhs instanceof HiGHSNumExpr rhs_cast){
-                for(int i = 0; i < rhs_cast.variables.size(); i++) {
-                    if(!lhs_cast.variables.contains(rhs_cast.variables.get(i))) {
-                        lhs_cast.variables.add(rhs_cast.variables.get(i));
-                        lhs_cast.coefficients.add(-rhs_cast.coefficients.get(i));
-                    } else {
-                        int index = lhs_cast.variables.indexOf(rhs_cast.variables.get(i));
-                        lhs_cast.coefficients.set(index, lhs_cast.coefficients.get(index) - rhs_cast.coefficients.get(i));
-                    }
-                }
-                lhs_cast.constant = lhs_cast.constant - rhs_cast.constant;
-                constraint_cast.rhs = constant(0);
-            }
-        } else {
-            throw new HiGHSException("Invalid constraint type: " + constraint.getClass());
-        }
-    }
+    public void rebalanceConstraint(Constraint constraint) {
+        HiGHSConstraint hiGHSConstraint = new HiGHSConstraint(constraint);
+        HiGHSNumExpr lhs_expr = new HiGHSNumExpr(hiGHSConstraint.lhs);
+        HiGHSNumExpr rhs_expr = new HiGHSNumExpr(hiGHSConstraint.rhs);
 
-    /**
-     * Represents a constraint in the HiGHS model.
-     * A constraint consists of a left-hand side (lhs) expression, a right-hand side (rhs) expression,
-     * and a constraint type (e.g., equality, less-than-or-equal-to, greater-than-or-equal-to).
-     */
-    private class HiGHSConstraint implements Constraint {
-        /**
-         * The name of the constraint.
-         */
-        String name;
-
-        /**
-         * The left-hand side numerical expression of the constraint.
-         */
-        NumExpr lhs;
-
-        /**
-         * The right-hand side numerical expression of the constraint.
-         */
-        NumExpr rhs;
-
-        /**
-         * The type of the constraint (e.g., equality, inequality).
-         */
-        ConstraintType type;
-
-        /**
-         * Constructs a new HiGHSConstraint with the specified lhs, rhs, and type.
-         *
-         * @param lhs  The left-hand side numerical expression.
-         * @param rhs  The right-hand side numerical expression.
-         * @param type The type of the constraint.
-         */
-        HiGHSConstraint(NumExpr lhs, NumExpr rhs, ConstraintType type) {
-            this.lhs = lhs;
-            this.rhs = rhs;
-            this.type = type;
-            this.name = "Constraint_" + constraintCounter++;
-        }
-
-        /**
-         * Constructs a new HiGHSConstraint with a default name.
-         */
-        HiGHSConstraint() {
-            this.name = "Constraint_" + constraintCounter++;
-        }
-
-        /**
-         * Gets the name of the constraint.
-         *
-         * @return The name of the constraint.
-         */
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        /**
-         * Sets the name of the constraint.
-         *
-         * @param name The new name of the constraint.
-         */
-        @Override
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            String result = name + ": ";
-            result = result + lhs.toString() + " ";
-            if (type == ConstraintType.Eq) {
-                result = result + "= ";
-            } else if (type == ConstraintType.Le) {
-                result = result + "<= ";
-            } else if (type == ConstraintType.Ge) {
-                result = result + ">= ";
-            }
-            result = result + rhs.toString();
-            return result;
-        }
-    }
-
-    /**
-     * Represents a numerical variable in the HiGHS model.
-     * A numerical variable has a name, lower bound, and upper bound.
-     */
-    private class HiGHSNumVar implements NumVar {
-        /**
-         * The name of the numerical variable.
-         */
-        String name;
-
-        /**
-         * The lower bound of the numerical variable.
-         */
-        double lb;
-
-        /**
-         * The upper bound of the numerical variable.
-         */
-        double ub;
-
-        /**
-         * Constructs a new HiGHSNumVar with default bounds and a generated name.
-         * The lower bound is set to 0, and the upper bound is set to Double.MAX_VALUE.
-         */
-        HiGHSNumVar() {
-            this.name = "NumVar_" + varCounter++;
-            this.lb = 0;
-            this.ub = Double.MAX_VALUE;
-        }
-
-        /**
-         * Gets the lower bound of the numerical variable.
-         *
-         * @return The lower bound of the variable.
-         */
-        @Override
-        public double getLB() {
-            return this.lb;
-        }
-
-        /**
-         * Gets the upper bound of the numerical variable.
-         *
-         * @return The upper bound of the variable.
-         */
-        @Override
-        public double getUB() {
-            return this.ub;
-        }
-
-        /**
-         * Gets the type of the numerical variable.
-         *
-         * @return The type of the variable, or null if not specified.
-         */
-        @Override
-        public NumVarType getType() {
-            return null;
-        }
-
-        /**
-         * Gets the name of the numerical variable.
-         *
-         * @return The name of the variable.
-         */
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        /**
-         * Sets the lower bound of the numerical variable.
-         *
-         * @param lb The new lower bound of the variable.
-         */
-        @Override
-        public void setLB(double lb) {
-            this.lb = lb;
-        }
-
-        /**
-         * Sets the upper bound of the numerical variable.
-         *
-         * @param ub The new upper bound of the variable.
-         */
-        @Override
-        public void setUB(double ub) {
-            this.ub = ub;
-        }
-
-        /**
-         * Sets the name of the numerical variable.
-         *
-         * @param name The new name of the variable.
-         */
-        @Override
-        public void setName(String name) {
-            this.name = name;
-        }
-    }
-
-    /**
-     * Represents an integer variable in the HiGHS model.
-     * An integer variable has a name, minimum bound, maximum bound, and a type.
-     */
-    private class HiGHSIntVar implements IntVar {
-        /**
-         * The name of the integer variable.
-         */
-        String name;
-
-        /**
-         * The maximum bound of the integer variable.
-         */
-        int max;
-
-        /**
-         * The minimum bound of the integer variable.
-         */
-        int min;
-
-        /**
-         * The type of the variable, which is set to integer.
-         */
-        NumVarType type = NumVarType.Int;
-
-        /**
-         * Constructs a new HiGHSIntVar with default bounds and a generated name.
-         * The minimum bound is set to 0, and the maximum bound is set to Integer.MAX_VALUE.
-         */
-        public HiGHSIntVar() {
-            this.name = "IntVar_" + varCounter++;
-            this.max = Integer.MAX_VALUE;
-            this.min = 0;
-        }
-
-        /**
-         * Constructs a new HiGHSIntVar with specified minimum and maximum bounds.
-         *
-         * @param min The minimum bound of the integer variable.
-         * @param max The maximum bound of the integer variable.
-         */
-        public HiGHSIntVar(int min, int max) {
-            this.name = "IntVar_" + varCounter++;
-            this.max = max;
-            this.min = min;
-        }
-
-        /**
-         * Constructs a new HiGHSIntVar with a specified maximum bound.
-         * The minimum bound is set to 0.
-         *
-         * @param max The maximum bound of the integer variable.
-         */
-        public HiGHSIntVar(int max) {
-            this.name = "IntVar_" + varCounter++;
-            this.max = max;
-            this.min = 0;
-        }
-
-        /**
-         * Gets the maximum bound of the integer variable.
-         *
-         * @return The maximum bound of the variable.
-         */
-        @Override
-        public int getMax() {
-            return max;
-        }
-
-        /**
-         * Gets the minimum bound of the integer variable.
-         *
-         * @return The minimum bound of the variable.
-         */
-        @Override
-        public int getMin() {
-            return min;
-        }
-
-        /**
-         * Sets the maximum bound of the integer variable.
-         *
-         * @param max The new maximum bound of the variable.
-         * @return The updated maximum bound.
-         */
-        @Override
-        public int setMax(int max) {
-            this.max = max;
-            return max;
-        }
-
-        /**
-         * Sets the minimum bound of the integer variable.
-         *
-         * @param min The new minimum bound of the variable.
-         * @return The updated minimum bound.
-         */
-        @Override
-        public int setMin(int min) {
-            this.min = min;
-            return min;
-        }
-
-        /**
-         * Gets the lower bound of the integer variable as a double.
-         *
-         * @return The lower bound of the variable.
-         */
-        @Override
-        public double getLB() {
-            return min;
-        }
-
-        /**
-         * Gets the upper bound of the integer variable as a double.
-         *
-         * @return The upper bound of the variable.
-         */
-        @Override
-        public double getUB() {
-            return max;
-        }
-
-        /**
-         * Gets the type of the integer variable.
-         *
-         * @return The type of the variable, or null if not specified.
-         */
-        @Override
-        public NumVarType getType() {
-            return null;
-        }
-
-        /**
-         * Gets the name of the integer variable.
-         *
-         * @return The name of the variable.
-         */
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        /**
-         * Sets the lower bound of the integer variable. This method is not implemented.
-         *
-         * @param lb The new lower bound of the variable.
-         */
-        @Override
-        public void setLB(double lb) {
-            // Not implemented
-        }
-
-        /**
-         * Sets the upper bound of the integer variable. This method is not implemented.
-         *
-         * @param ub The new upper bound of the variable.
-         */
-        @Override
-        public void setUB(double ub) {
-            // Not implemented
-        }
-
-        /**
-         * Sets the name of the integer variable.
-         *
-         * @param name The new name of the variable.
-         */
-        @Override
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
-
-    /**
-     * Represents a boolean variable in the HiGHS model.
-     * A boolean variable is a specialized integer variable with bounds [0, 1].
-     */
-    private class HiGHSBoolVar extends HiGHSIntVar {
-        /**
-         * The type of the variable, which is set to boolean.
-         */
-        NumVarType type = NumVarType.Bool;
-
-        /**
-         * Constructs a new HiGHSBoolVar with default bounds [0, 1] and a generated name.
-         */
-        public HiGHSBoolVar() {
-            this.name = "BoolVar_" + varCounter++;
-            this.max = 1;
-            this.min = 0;
-        }
-
-    }
-
-    /**
-     * Represents a numerical expression in the HiGHS model.
-     * A numerical expression consists of variables, coefficients, and a constant term.
-     */
-    private class HiGHSNumExpr implements NumExpr {
-        /**
-         * The name of the numerical expression.
-         */
-        String name;
-
-        /**
-         * The list of variables in the numerical expression.
-         */
-        List<NumVar> variables;
-
-        /**
-         * The list of coefficients corresponding to the variables.
-         */
-        List<Double> coefficients;
-
-        /**
-         * The constant term in the numerical expression.
-         */
-        Double constant;
-
-        /**
-         * Constructs a new HiGHSNumExpr by copying an existing numerical expression.
-         *
-         * @param expr The numerical expression to copy.
-         * @throws HiGHSException If the expression type is invalid.
-         */
-        public HiGHSNumExpr(NumExpr expr) {
-            name = expr.getName() + "_" + varCounter++;
-            if (expr instanceof HiGHSNumExpr expr_cast) {
-                this.coefficients = new ArrayList<>(expr_cast.coefficients);
-                this.variables = new ArrayList<>(expr_cast.variables);
-                this.constant = expr_cast.constant;
-            } else if (expr instanceof HiGHSIntExpr expr_cast) {
-                this.coefficients = new ArrayList<>();
-                for (Integer value : expr_cast.coefficients) {
-                    this.coefficients.add(value.doubleValue());
-                }
-                this.variables = new ArrayList<>(expr_cast.variables);
-                this.constant = (double) expr_cast.constant;
-            } else if (expr instanceof HiGHSIntVar expr_cast) {
-                this.coefficients = new ArrayList<>();
-                this.coefficients.add(1.0);
-                this.variables = new ArrayList<>();
-                this.variables.add(expr_cast);
-                this.constant = 0.0;
-            } else if (expr instanceof HiGHSNumVar expr_cast) {
-                this.coefficients = new ArrayList<>();
-                this.coefficients.add(1.0);
-                this.variables = new ArrayList<>();
-                this.variables.add(expr_cast);
-                this.constant = 0.0;
+        for (int i = 0; i < rhs_expr.variables.size(); i++) {
+            if (!lhs_expr.variables.contains(rhs_expr.variables.get(i))) {
+                lhs_expr.variables.add(rhs_expr.variables.get(i));
+                lhs_expr.coefficients.add(-rhs_expr.coefficients.get(i));
             } else {
-                throw new HiGHSException("Invalid expression type: " + expr.getClass());
+                int index = lhs_expr.variables.indexOf(rhs_expr.variables.get(i));
+                lhs_expr.coefficients.set(index, lhs_expr.coefficients.get(index) - rhs_expr.coefficients.get(i));
             }
         }
-
-        /**
-         * Constructs a new HiGHSNumExpr for a single variable with a coefficient of 1.
-         *
-         * @param var The variable to include in the expression.
-         */
-        public HiGHSNumExpr(NumVar var) {
-            this.name = "NumExpr_" + varCounter++;
-            this.variables = new ArrayList<>();
-            this.coefficients = new ArrayList<>();
-            this.constant = 0.0;
-            this.variables.add(var);
-            this.coefficients.add(1.0);
-        }
-
-        /**
-         * Gets the name of the numerical expression.
-         *
-         * @return The name of the expression.
-         */
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        /**
-         * Sets the name of the numerical expression.
-         *
-         * @param name The new name of the expression.
-         */
-        @Override
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        /**
-         * Constructs a new HiGHSNumExpr with no variables, coefficients, or constant.
-         */
-        HiGHSNumExpr() {
-            this.name = "NumExpr_" + varCounter++;
-            this.variables = new ArrayList<>();
-            this.coefficients = new ArrayList<>();
-            this.constant = 0.0;
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder result = new StringBuilder(" ");
-            for (int i = 0; i < coefficients.size(); i++) {
-                if (coefficients.get(i) < 0) {
-                    result.append("- ");
-                } else {
-                    result.append("+ ");
-                }
-                result.append(Math.abs(coefficients.get(i))).append(" ").append(variables.get(i).getName()).append(" ");
-            }
-            result.append("+ ").append(constant);
-            return result.toString();
-        }
+        hiGHSConstraint.rhs = constant( rhs_expr.constant - lhs_expr.constant);
+        lhs_expr.constant = 0.0;
     }
 
-    /**
-     * Represents an integer expression in the HiGHS model.
-     * An integer expression consists of a name, a list of integer variables,
-     * a list of integer coefficients, and a constant term.
-     */
-    private class HiGHSIntExpr implements IntExpr {
-        /**
-         * The name of the integer expression.
-         */
-        String name;
 
-        /**
-         * The list of integer variables in the expression.
-         */
-        List<IntVar> variables;
-
-        /**
-         * The list of integer coefficients corresponding to the variables.
-         */
-        List<Integer> coefficients;
-
-        /**
-         * The constant term in the integer expression.
-         */
-        Integer constant;
-
-        /**
-         * Gets the name of the integer expression.
-         *
-         * @return The name of the expression.
-         */
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        /**
-         * Sets the name of the integer expression.
-         *
-         * @param name The new name of the expression.
-         */
-        @Override
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        /**
-         * Constructs a new HiGHSIntExpr with no variables, coefficients, or constant.
-         * The name is generated automatically.
-         */
-        HiGHSIntExpr() {
-            this.name = "IntExpr_" + varCounter++;
-            this.variables = new ArrayList<>();
-            this.coefficients = new ArrayList<>();
-            this.constant = 0;
-        }
-
-        /**
-         * Constructs a new HiGHSIntExpr by copying an existing integer expression.
-         *
-         * @param expr The integer expression to copy.
-         * @throws HiGHSException If the expression type is invalid.
-         */
-        HiGHSIntExpr(IntExpr expr) {
-            this.name = expr.getName() + "_" + varCounter++;
-            if (expr instanceof HiGHSIntExpr expr_cast) {
-                this.coefficients = new ArrayList<>(expr_cast.coefficients);
-                this.variables = new ArrayList<>(expr_cast.variables);
-                this.constant = expr_cast.constant;
-            }
-            if (expr instanceof HiGHSNumExpr expr_cast) {
-                throw new HiGHSException("Invalid expression type, converting NumExpr to IntExpr is not defined: " + expr.getClass() + ", " + expr_cast.getClass());
-            }
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder result = new StringBuilder(" ");
-            for (int i = 0; i < coefficients.size(); i++) {
-                if (coefficients.get(i) < 0) {
-                    result.append("- ");
-                } else {
-                    result.append("+ ");
-                }
-                result.append(Math.abs(coefficients.get(i))).append(" ").append(variables.get(i).getName()).append(" ");
-            }
-            result.append("+ ").append(constant);
-            return result.toString();
-        }
-    }
-
-    /**
-     * Represents an objective in the HiGHS model.
-     * An objective consists of a numerical expression, a sense (maximize or minimize), and a name.
-     */
-    private class HiGHSObjective implements Objective {
-        /**
-         * The name of the objective.
-         */
-        String name;
-
-        /**
-         * The numerical expression representing the objective.
-         */
-        NumExpr expr;
-
-        /**
-         * The sense of the objective (maximize or minimize).
-         */
-        ObjectiveSense sense;
-
-        /**
-         * Constructs a new HiGHSObjective with the specified expression and sense.
-         * The name is generated automatically.
-         *
-         * @param expr  The numerical expression representing the objective.
-         * @param sense The sense of the objective (maximize or minimize).
-         */
-        public HiGHSObjective(NumExpr expr, ObjectiveSense sense) {
-            this.expr = expr;
-            this.sense = sense;
-            this.name = "Objective_" + varCounter++;
-        }
-
-        /**
-         * Gets the constant term of the objective's numerical expression.
-         *
-         * @return The constant term of the expression.
-         * @throws HiGHSException If the expression type is invalid.
-         */
-        @Override
-        public double getConstant() {
-            if (expr instanceof HiGHSNumExpr expr_cast) {
-                return expr_cast.constant;
-            }
-            if (expr instanceof HiGHSIntExpr expr_cast) {
-                return expr_cast.constant.doubleValue();
-            }
-            throw new HiGHSException("Invalid expression type for constant: " + expr.getClass());
-        }
-
-        /**
-         * Gets the numerical expression of the objective.
-         *
-         * @return The numerical expression.
-         */
-        @Override
-        public NumExpr getExpr() {
-            return expr;
-        }
-
-        /**
-         * Gets the name of the objective.
-         *
-         * @return The name of the objective.
-         */
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        /**
-         * Sets the name of the objective.
-         *
-         * @param name The new name of the objective.
-         */
-        @Override
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder result = new StringBuilder(" ");
-            if (sense == ObjectiveSense.Maximize) {
-                result.append("Maximize ");
-            } else {
-                result.append("Minimize ");
-            }
-            result.append(expr.toString());
-            return result.toString();
-        }
-    }
 }

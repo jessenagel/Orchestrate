@@ -24,7 +24,6 @@ class HiGHSTest {
         NumVar x3 = highs.numVar("x3");
         IntVar x4 = highs.intVar(2, 3, "x4");
 
-        System.out.println(x1.getName());
 
         // Declare constraints
         NumExpr lhs1 = highs.constant(0);
@@ -132,7 +131,9 @@ class HiGHSTest {
         NumExpr lsh3 = highs.constant(0);
         lsh3 = highs.sum(lsh3, x);
         lsh3 = highs.sum(lsh3, highs.prod(-1, y));
-        highs.addLe(lsh3, highs.constant(2));
+        Constraint constraint = highs.addLe(lsh3, highs.constant(2));
+
+        highs.rebalanceConstraint(constraint);
 
         // Add objective function
         NumExpr objective = highs.constant(0);
@@ -197,6 +198,26 @@ class HiGHSTest {
 
     @Test
     void addEq() {
+        HiGHS highs = new HiGHS();
+        // Declare variables x and y
+        NumVar x = highs.numVar("x");
+        NumVar y = highs.numVar("y");
+        // Declare numerical expression
+        NumExpr lhs = highs.constant(0);
+        lhs = highs.sum(lhs, x);
+        lhs = highs.sum(lhs, y);
+        // Add equality constraint
+        Constraint constraint = highs.addEq(lhs, 10);
+        HiGHSConstraint hConstraint = new HiGHSConstraint(constraint);
+        // Check the constraint type
+        HiGHSNumExpr lhsExpr = new HiGHSNumExpr(hConstraint.lhs);
+        HiGHSNumExpr rhsExpr = new HiGHSNumExpr(hConstraint.rhs);
+
+        assertEquals(0, lhsExpr.constant);
+        assertEquals(10, rhsExpr.constant);
+        assertEquals(2, lhsExpr.variables.size());
+        assertEquals(0, rhsExpr.variables.size());
+        assertEquals(ConstraintType.Eq, hConstraint.type);
     }
 
     @Test
@@ -205,10 +226,50 @@ class HiGHSTest {
 
     @Test
     void addLe() {
+        HiGHS highs = new HiGHS();
+        // Declare variables x and y
+        NumVar x = highs.numVar("x");
+        NumVar y = highs.numVar("y");
+        // Declare numerical expression
+        NumExpr lhs = highs.constant(0);
+        lhs = highs.sum(lhs, x);
+        lhs = highs.sum(lhs, y);
+        // Add equality constraint
+        Constraint constraint = highs.addLe(lhs, highs.constant(10));
+        HiGHSConstraint hConstraint = new HiGHSConstraint(constraint);
+        // Check the constraint type
+        HiGHSNumExpr lhsExpr = new HiGHSNumExpr(hConstraint.lhs);
+        HiGHSNumExpr rhsExpr = new HiGHSNumExpr(hConstraint.rhs);
+
+        assertEquals(0, lhsExpr.constant);
+        assertEquals(10, rhsExpr.constant);
+        assertEquals(2, lhsExpr.variables.size());
+        assertEquals(0, rhsExpr.variables.size());
+        assertEquals(ConstraintType.Le, hConstraint.type);
     }
 
     @Test
     void addGe() {
+        HiGHS highs = new HiGHS();
+        // Declare variables x and y
+        NumVar x = highs.numVar("x");
+        NumVar y = highs.numVar("y");
+        // Declare numerical expression
+        NumExpr lhs = highs.constant(0);
+        lhs = highs.sum(lhs, x);
+        lhs = highs.sum(lhs, y);
+        // Add equality constraint
+        Constraint constraint = highs.addGe(lhs, highs.constant(10));
+        HiGHSConstraint hConstraint = new HiGHSConstraint(constraint);
+        // Check the constraint type
+        HiGHSNumExpr lhsExpr = new HiGHSNumExpr(hConstraint.lhs);
+        HiGHSNumExpr rhsExpr = new HiGHSNumExpr(hConstraint.rhs);
+
+        assertEquals(0, lhsExpr.constant);
+        assertEquals(10, rhsExpr.constant);
+        assertEquals(2, lhsExpr.variables.size());
+        assertEquals(0, rhsExpr.variables.size());
+        assertEquals(ConstraintType.Ge, hConstraint.type);
     }
 
     @Test
@@ -316,7 +377,6 @@ class HiGHSTest {
         obj = highs.sum(obj, 5);
         highs.addMinimize(obj);
         highs.exportModel("test.lp");
-        System.out.println(lhs1);
 
     }
 
@@ -388,9 +448,7 @@ class HiGHSTest {
         NumExpr rhs = highs.constant(100);
         rhs = highs.sum(rhs, highs.prod(-100, x));
         Constraint constraint = highs.addLe(lhs, rhs);
-        System.out.println(constraint);
         highs.rebalanceConstraint(constraint);
-        System.out.println(constraint);
     }
 
     @Test

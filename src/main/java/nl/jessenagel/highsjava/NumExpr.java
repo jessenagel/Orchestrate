@@ -7,4 +7,11 @@ package nl.jessenagel.highsjava;
  */
 public interface NumExpr extends Fragment {
 
+    /**
+     * Accepts a visitor to perform operations on this numerical expression.
+     *
+     * @param visitor The visitor to accept.
+     */
+    void accept(NumExprVisitor visitor);
+
 }
