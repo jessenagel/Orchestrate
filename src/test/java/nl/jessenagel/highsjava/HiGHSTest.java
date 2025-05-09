@@ -194,4 +194,189 @@ class HiGHSTest {
         assertEquals(6.0, highs.getValue(x), 0.01);
         assertEquals(4.0, highs.getValue(y), 0.01);
     }
+
+    @Test
+    void addEq() {
+    }
+
+    @Test
+    void testAddEq() {
+    }
+
+    @Test
+    void addLe() {
+    }
+
+    @Test
+    void addGe() {
+    }
+
+    @Test
+    void sum() {
+    }
+
+    @Test
+    void testSum() {
+    }
+
+    @Test
+    void testSum1() {
+    }
+
+    @Test
+    void testSum2() {
+    }
+
+    @Test
+    void testSum3() {
+    }
+
+    @Test
+    void testSum4() {
+    }
+
+    @Test
+    void getName() {
+    }
+
+    @Test
+    void setName() {
+    }
+
+    @Test
+    void add() {
+    }
+
+    @Test
+    void testAdd() {
+    }
+
+    @Test
+    void remove() {
+    }
+
+    @Test
+    void testRemove() {
+    }
+
+    @Test
+    void importSol() {
+    }
+
+    @Test
+    void boolVar() {
+    }
+
+    @Test
+    void testBoolVar() {
+    }
+
+    @Test
+    void intVar() {
+    }
+
+    @Test
+    void testIntVar() {
+    }
+
+    @Test
+    void testIntVar1() {
+    }
+
+    @Test
+    void testIntVar2() {
+    }
+
+    @Test
+    void constant() {
+    }
+
+    @Test
+    void testConstant() {
+    }
+
+    @Test
+    void prod() {
+    }
+
+    @Test
+    void testProd() {
+        HiGHS highs = new HiGHS();
+        // Declare variables x and y
+        NumVar x = highs.numVar("x");
+        NumVar y = highs.numVar("y");
+        // Declare numerical expression
+        NumExpr lhs1 = highs.constant(0);
+        lhs1 = highs.sum(lhs1, x);
+        lhs1 = highs.sum(1, highs.prod(-1, lhs1));
+        highs.addEq(lhs1, 1);
+        NumExpr obj = highs.constant(0);
+        obj = highs.sum(obj,x);
+        obj = highs.sum(obj,y);
+        obj = highs.sum(obj, 5);
+        highs.addMinimize(obj);
+        highs.exportModel("test.lp");
+        System.out.println(lhs1);
+
+    }
+
+    @Test
+    void testProd1() {
+    }
+
+    @Test
+    void testProd2() {
+    }
+
+    @Test
+    void addMaximize() {
+    }
+
+    @Test
+    void testAddMaximize() {
+    }
+
+    @Test
+    void addMinimize() {
+    }
+
+    @Test
+    void testAddMinimize() {
+    }
+
+    @Test
+    void addObjective() {
+    }
+
+    @Test
+    void testAddObjective() {
+    }
+
+    @Test
+    void getValue() {
+    }
+
+    @Test
+    void testGetValue() {
+    }
+
+    @Test
+    void getObjValue() {
+    }
+
+    @Test
+    void numVar() {
+    }
+
+    @Test
+    void testNumVar() {
+    }
+
+    @Test
+    void solve() {
+    }
+
+    @Test
+    void rebalanceConstraint() {
+    }
 }

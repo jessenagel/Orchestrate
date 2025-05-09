@@ -644,9 +644,7 @@ public class HiGHS implements Modeler {
      * @return The resulting numerical expression.
      */
     public NumExpr prod(int i, NumExpr numExpr) {
-        HiGHSNumExpr expr = new HiGHSNumExpr(numExpr);
-        expr.coefficients.replaceAll(v -> v * i);
-        return expr;
+        return prod((double)i, numExpr);
     }
 
     /**
@@ -659,6 +657,7 @@ public class HiGHS implements Modeler {
     public IntExpr prod(int i, IntExpr numVar) {
         HiGHSIntExpr expr = new HiGHSIntExpr(numVar);
         expr.coefficients.replaceAll(v -> v * i);
+        expr.constant = expr.constant * i;
         return expr;
     }
 
@@ -670,9 +669,7 @@ public class HiGHS implements Modeler {
      * @return The resulting numerical expression.
      */
     public NumExpr prod(double d, IntExpr numVar) {
-        HiGHSNumExpr expr = new HiGHSNumExpr(numVar);
-        expr.coefficients.replaceAll(v -> v * d);
-        return expr;
+        return prod(d, (NumExpr) numVar);
     }
 
     /**
@@ -685,6 +682,7 @@ public class HiGHS implements Modeler {
     public NumExpr prod(double d, NumExpr numVar) {
         HiGHSNumExpr expr = new HiGHSNumExpr(numVar);
         expr.coefficients.replaceAll(v -> v * d);
+        expr.constant = expr.constant * d;
         return expr;
     }
 
