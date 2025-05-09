@@ -783,6 +783,7 @@ public class HiGHS implements Modeler {
                 lhs_expr.coefficients.set(index, lhs_expr.coefficients.get(index) - rhs_expr.coefficients.get(i));
             }
         }
+        hiGHSConstraint.lhs = lhs_expr;
         hiGHSConstraint.rhs = constant( rhs_expr.constant - lhs_expr.constant);
         lhs_expr.constant = 0.0;
         return hiGHSConstraint;
