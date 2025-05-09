@@ -151,7 +151,10 @@ public class HiGHSIntVar implements IntVar {
      */
     @Override
     public void setLB(double lb) {
-        // Not implemented
+        if (lb > this.max) {
+            throw new IllegalArgumentException("Lower bound cannot be greater than the current upper bound (" + this.max + ").");
+        }
+        this.min = (int) lb;
     }
 
     /**
