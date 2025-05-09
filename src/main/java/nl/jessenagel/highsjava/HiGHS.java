@@ -132,6 +132,7 @@ public class HiGHS implements Modeler {
             sum.variables.addAll(rhs.variables);
             sum.coefficients.addAll(lhs.coefficients);
             sum.coefficients.addAll(rhs.coefficients);
+            sum.constant = lhs.constant + rhs.constant;
             return sum;
         }
         else{
@@ -209,6 +210,7 @@ public class HiGHS implements Modeler {
             HiGHSNumExpr sum = new HiGHSNumExpr(lhs_cast);
             sum.variables.addAll(rhs_cast.variables);
             sum.coefficients.addAll(rhs_cast.coefficients);
+            sum.constant += rhs_cast.constant;
             return sum;
         } else if (lhs instanceof HiGHSIntExpr lhs_cast && rhs instanceof HiGHSIntExpr rhs_cast) {
             HiGHSIntExpr sum = new HiGHSIntExpr();
@@ -216,11 +218,13 @@ public class HiGHS implements Modeler {
             sum.variables.addAll(rhs_cast.variables);
             sum.coefficients.addAll(lhs_cast.coefficients);
             sum.coefficients.addAll(rhs_cast.coefficients);
+            sum.constant = lhs_cast.constant + rhs_cast.constant;
             return sum;
         } else if (lhs instanceof HiGHSIntExpr lhs_cast && rhs instanceof HiGHSNumExpr rhs_cast) {
             HiGHSNumExpr sum = new HiGHSNumExpr(lhs_cast);
             sum.variables.addAll(rhs_cast.variables);
             sum.coefficients.addAll(rhs_cast.coefficients);
+            sum.constant += rhs_cast.constant;
             return sum;
         } else if (lhs instanceof HiGHSNumExpr lhs_cast && rhs instanceof HiGHSIntExpr rhs_cast) {
             HiGHSNumExpr sum = new HiGHSNumExpr(lhs_cast);
@@ -228,6 +232,7 @@ public class HiGHS implements Modeler {
             for (int i = 0; i < rhs_cast.variables.size(); i++) {
                 sum.coefficients.add(rhs_cast.coefficients.get(i).doubleValue());
             }
+            sum.constant += rhs_cast.constant;
             return sum;
         }
         throw new HiGHSException("Invalid expression types for sum: " + e1.getClass() + ", " + e2.getClass());
@@ -644,9 +649,7 @@ public class HiGHS implements Modeler {
      * @return The resulting numerical expression.
      */
     public NumExpr prod(int i, NumExpr numExpr) {
-        HiGHSNumExpr expr = new HiGHSNumExpr(numExpr);
-        expr.coefficients.replaceAll(v -> v * i);
-        return expr;
+        return prod((double)i, numExpr);
     }
 
     /**
@@ -659,6 +662,7 @@ public class HiGHS implements Modeler {
     public IntExpr prod(int i, IntExpr numVar) {
         HiGHSIntExpr expr = new HiGHSIntExpr(numVar);
         expr.coefficients.replaceAll(v -> v * i);
+        expr.constant = expr.constant * i;
         return expr;
     }
 
@@ -670,9 +674,7 @@ public class HiGHS implements Modeler {
      * @return The resulting numerical expression.
      */
     public NumExpr prod(double d, IntExpr numVar) {
-        HiGHSNumExpr expr = new HiGHSNumExpr(numVar);
-        expr.coefficients.replaceAll(v -> v * d);
-        return expr;
+        return prod(d, (NumExpr) numVar);
     }
 
     /**
@@ -685,6 +687,7 @@ public class HiGHS implements Modeler {
     public NumExpr prod(double d, NumExpr numVar) {
         HiGHSNumExpr expr = new HiGHSNumExpr(numVar);
         expr.coefficients.replaceAll(v -> v * d);
+        expr.constant = expr.constant * d;
         return expr;
     }
 
