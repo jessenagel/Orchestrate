@@ -767,6 +767,7 @@ public class HiGHS implements Modeler {
      * Rebalances the constraint by subtracting the right-hand side from the left-hand side.
      *
      * @param constraint The constraint to be rebalanced.
+     * @return The rebalanced constraint with updated left-hand and right-hand sides.
      */
     public Constraint rebalanceConstraint(Constraint constraint) {
         HiGHSConstraint hiGHSConstraint = new HiGHSConstraint(constraint);
