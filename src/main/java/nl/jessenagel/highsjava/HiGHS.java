@@ -750,7 +750,7 @@ public class HiGHS implements Modeler {
         // Write to file and call the solver
         exportModel("out-" + uniqueID + ".lp");
         try {
-            ProcessBuilder processBuilder = new ProcessBuilder("highs", "--model_file", "out-" + uniqueID + ".lp" , "--solution_file", "out-" + uniqueID + ".sol","--write_model_file", "out-" + uniqueID + ".lp");
+            ProcessBuilder processBuilder = new ProcessBuilder("highs", "--model_file", "out-" + uniqueID + ".lp" , "--solution_file", "out-" + uniqueID + ".sol");
             processBuilder.redirectOutput(new File("out.txt"));
             processBuilder.redirectError(new File("error.txt"));
             Process process = processBuilder.start();
@@ -759,6 +759,16 @@ public class HiGHS implements Modeler {
                 throw new RuntimeException("HiGHS solver failed with exit code: " + exitCode);
             }
             importSol("out-" + uniqueID + ".sol");
+            //Delete created files after reading
+            File file = new File("out-" + uniqueID + ".lp");
+            if (!file.delete()) {
+                throw new RuntimeException("Failed to delete the file: " + file.getName());
+            }
+            file = new File("out-" + uniqueID + ".sol");
+            if (!file.delete()){
+                throw new RuntimeException("Failed to delete the file: " + file.getName());
+            }
+
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
