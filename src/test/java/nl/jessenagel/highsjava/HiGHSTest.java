@@ -96,9 +96,6 @@ class HiGHSTest {
         // Solve the model
         highs.solve();
 
-        // Get the solution
-        highs.importSol("out.sol");
-
         // Check the solution
         assertEquals(6.0, highs.getValue(x), 0.01);
         assertEquals(4.0, highs.getValue(y), 0.01);
@@ -147,7 +144,6 @@ class HiGHSTest {
 
         // Solve the model
         highs.solve();
-        highs.importSol("out.sol");
         // Get the solution
         assertEquals(3.0, highs.getValue(x), 0.01);
         assertEquals(1.0, highs.getValue(y), 0.01);
@@ -190,7 +186,6 @@ class HiGHSTest {
 
         // Solve the model
         highs.solve();
-        highs.importSol("out.sol");
         // Get the solution
         assertEquals(6.0, highs.getValue(x), 0.01);
         assertEquals(4.0, highs.getValue(y), 0.01);
