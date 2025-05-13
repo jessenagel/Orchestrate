@@ -65,6 +65,7 @@ Currently, this API works by generating a `.lp` file and calling the HiGHS binar
 A more efficient approach would be to use the HiGHS C++ API directly from Java.
 The HiGHS4j project, which provides a Java interface to the HiGHS C++ API, does this but was not compatible with my requirements.
 Therefore, I decided to create this project.
+
 ## License
 This project is licensed under the MIT License. See the LICENSE file for details.
 
