@@ -762,11 +762,11 @@ public class HiGHS implements Modeler {
             //Delete created files after reading
             File file = new File("out-" + uniqueID + ".lp");
             if (!file.delete()) {
-                throw new RuntimeException("Failed to delete the file");
+                throw new RuntimeException("Failed to delete the file: " + file.getName());
             }
             file = new File("out-" + uniqueID + ".sol");
             if (!file.delete()){
-                throw new RuntimeException("Failed to delete the file");
+                throw new RuntimeException("Failed to delete the file: " + file.getName());
             }
 
         } catch (IOException | InterruptedException e) {
