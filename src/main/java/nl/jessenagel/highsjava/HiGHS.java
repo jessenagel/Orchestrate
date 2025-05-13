@@ -750,7 +750,7 @@ public class HiGHS implements Modeler {
         // Write to file and call the solver
         exportModel("out-" + uniqueID + ".lp");
         try {
-            ProcessBuilder processBuilder = new ProcessBuilder("highs", "--model_file", "out-" + uniqueID + ".lp" , "--solution_file", "out-" + uniqueID + ".sol","--write_model_file", "file.lp");
+            ProcessBuilder processBuilder = new ProcessBuilder("highs", "--model_file", "out-" + uniqueID + ".lp" , "--solution_file", "out-" + uniqueID + ".sol","--write_model_file", "out-" + uniqueID + ".lp");
             processBuilder.redirectOutput(new File("out.txt"));
             processBuilder.redirectError(new File("error.txt"));
             Process process = processBuilder.start();
