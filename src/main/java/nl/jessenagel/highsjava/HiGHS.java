@@ -1,10 +1,7 @@
 package nl.jessenagel.highsjava;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * HiGHS is the class used to create LP models to be solved in the HiGHS solver
@@ -749,15 +746,19 @@ public class HiGHS implements Modeler {
      * @throws RuntimeException If an error occurs during the solving process.
      */
     public void solve() {
+        String uniqueID = UUID.randomUUID().toString();
         // Write to file and call the solver
-        exportModel("out.lp");
+        exportModel("out-" + uniqueID + ".lp");
         try {
-            ProcessBuilder processBuilder = new ProcessBuilder("highs", "--model_file", "out.lp", "--solution_file", "out.sol","--write_model_file", "file.lp");
+            ProcessBuilder processBuilder = new ProcessBuilder("highs", "--model_file", "out-" + uniqueID + ".lp" , "--solution_file", "out-" + uniqueID + ".sol","--write_model_file", "file.lp");
             processBuilder.redirectOutput(new File("out.txt"));
             processBuilder.redirectError(new File("error.txt"));
             Process process = processBuilder.start();
             int exitCode = process.waitFor();
-            System.out.println("Process exited with code: " + exitCode);
+            if (exitCode != 0) {
+                throw new RuntimeException("HiGHS solver failed with exit code: " + exitCode);
+            }
+            importSol("out-" + uniqueID + ".sol");
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
