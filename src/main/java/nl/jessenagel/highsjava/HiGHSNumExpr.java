@@ -1,8 +1,10 @@
 package nl.jessenagel.highsjava;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-
+import java.util.Map;
+import java.util.Map.Entry;
 /**
  * Represents a numerical expression in the HiGHS model.
  * A numerical expression consists of variables, coefficients, and a constant term.
@@ -14,14 +16,9 @@ public class HiGHSNumExpr implements NumExpr {
     String name;
 
     /**
-     * The list of variables in the numerical expression.
+     * The list of numerical variables in the expression.
      */
-    List<NumVar> variables;
-
-    /**
-     * The list of coefficients corresponding to the variables.
-     */
-    List<Double> coefficients;
+    Map<NumVar, Double> variablesAndCoefficients;
 
     /**
      * The constant term in the numerical expression.
@@ -46,11 +43,9 @@ public class HiGHSNumExpr implements NumExpr {
      */
     public HiGHSNumExpr(NumVar var) {
         this.name = "NumExpr_" + HiGHSCounter.getNextVarCounter();
-        this.variables = new ArrayList<>();
-        this.coefficients = new ArrayList<>();
+        this.variablesAndCoefficients = new LinkedHashMap<>();
         this.constant = 0.0;
-        this.variables.add(var);
-        this.coefficients.add(1.0);
+        this.variablesAndCoefficients.put(var,1.0);
     }
 
     /**
@@ -58,8 +53,7 @@ public class HiGHSNumExpr implements NumExpr {
      */
     HiGHSNumExpr() {
         this.name = "NumExpr_" + HiGHSCounter.getNextVarCounter();
-        this.variables = new ArrayList<>();
-        this.coefficients = new ArrayList<>();
+        this.variablesAndCoefficients = new LinkedHashMap<>();;
         this.constant = 0.0;
     }
 
@@ -91,13 +85,15 @@ public class HiGHSNumExpr implements NumExpr {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder(" ");
-        for (int i = 0; i < coefficients.size(); i++) {
-            if (coefficients.get(i) < 0) {
+        for(Entry<NumVar,Double> entry : variablesAndCoefficients.entrySet()) {
+            NumVar variable = entry.getKey();
+            Double coefficient = entry.getValue();
+            if (coefficient < 0) {
                 result.append("- ");
             } else {
                 result.append("+ ");
             }
-            result.append(Math.abs(coefficients.get(i))).append(" ").append(variables.get(i).getName()).append(" ");
+            result.append(Math.abs(coefficient)).append(" ").append(variable.getName()).append(" ");
         }
         result.append("+ ").append(constant);
         return result.toString();

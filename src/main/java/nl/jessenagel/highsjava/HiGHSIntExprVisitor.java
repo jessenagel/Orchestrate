@@ -1,6 +1,7 @@
 package nl.jessenagel.highsjava;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public class HiGHSIntExprVisitor implements IntExprVisitor {
@@ -18,17 +19,14 @@ public class HiGHSIntExprVisitor implements IntExprVisitor {
 
     @Override
     public void visit(HiGHSIntExpr expr) {
-        target.coefficients = new ArrayList<>(expr.coefficients);
-        target.variables = new ArrayList<>(expr.variables);
+        target.variablesAndCoefficients = new LinkedHashMap<>(expr.variablesAndCoefficients);
         target.constant = expr.constant;
     }
 
     @Override
     public void visit(HiGHSIntVar expr) {
-        target.coefficients = new ArrayList<>();
-        target.coefficients.add(1);
-        target.variables = new ArrayList<>();
-        target.variables.add(expr);
+        target.variablesAndCoefficients = new LinkedHashMap<>();
+        target.variablesAndCoefficients.put(expr, 1);
         target.constant = 0;
     }
 

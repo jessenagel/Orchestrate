@@ -1,13 +1,17 @@
 package nl.jessenagel.highsjava;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * HiGHS is the class used to create LP models to be solved in the HiGHS solver
  */
 public class HiGHS implements Modeler {
-
+    final Logger logger = LoggerFactory.getLogger(HiGHS.class);
     private final List<Constraint> constraints;
     private final List<NumVar> variables;
     private final Map<NumVar, Double> solutionValues;
@@ -16,6 +20,7 @@ public class HiGHS implements Modeler {
     private int varCounter = 0;
     private int constraintCounter = 0;
     private double objectiveValue;
+    private Status status;
 
     /**
      * Constructer which creates a new HiGHS object
@@ -25,7 +30,7 @@ public class HiGHS implements Modeler {
         this.constraints = new ArrayList<>();
         this.variables = new ArrayList<>();
         this.solutionValues = new HashMap<>();
-
+        this.status = Status.Unknown;
     }
 
     /**
@@ -120,13 +125,13 @@ public class HiGHS implements Modeler {
     public IntExpr sum(IntExpr e1, IntExpr e2) {
         HiGHSIntExpr sum = new HiGHSIntExpr(e1);
         HiGHSIntExpr addition = new HiGHSIntExpr(e2);
-        for (int i = 0; i < addition.variables.size(); i++) {
-            if (!sum.variables.contains(addition.variables.get(i))) {
-                sum.variables.add(addition.variables.get(i));
-                sum.coefficients.add(addition.coefficients.get(i));
+        for (Entry<IntVar, Integer> entry : addition.variablesAndCoefficients.entrySet()) {
+            IntVar variable = entry.getKey();
+            int coefficient = entry.getValue();
+            if (!sum.variablesAndCoefficients.containsKey(variable)) {
+                sum.variablesAndCoefficients.put(variable, coefficient);
             } else {
-                int index = sum.variables.indexOf(addition.variables.get(i));
-                sum.coefficients.set(index, sum.coefficients.get(index) + addition.coefficients.get(i));
+                sum.variablesAndCoefficients.put(variable, sum.variablesAndCoefficients.get(variable) + coefficient);
             }
         }
         sum.constant += addition.constant;
@@ -172,14 +177,13 @@ public class HiGHS implements Modeler {
         HiGHSNumExpr sum = new HiGHSNumExpr(e1);
 
         HiGHSNumExpr addition = new HiGHSNumExpr(e2);
-
-        for (int i = 0; i < addition.variables.size(); i++) {
-            if (!sum.variables.contains(addition.variables.get(i))) {
-                sum.variables.add(addition.variables.get(i));
-                sum.coefficients.add(addition.coefficients.get(i));
+        for (Entry<NumVar, Double> entry : addition.variablesAndCoefficients.entrySet()) {
+            NumVar variable = entry.getKey();
+            double coefficient = entry.getValue();
+            if (!sum.variablesAndCoefficients.containsKey(variable)) {
+                sum.variablesAndCoefficients.put(variable, coefficient);
             } else {
-                int index = sum.variables.indexOf(addition.variables.get(i));
-                sum.coefficients.set(index, sum.coefficients.get(index) + addition.coefficients.get(i));
+                sum.variablesAndCoefficients.put(variable, sum.variablesAndCoefficients.get(variable) + coefficient);
             }
         }
         sum.constant += addition.constant;
@@ -274,23 +278,26 @@ public class HiGHS implements Modeler {
             }
             //Write the objective function
             HiGHSNumExpr expr_cast = new HiGHSNumExpr(this.objective.getExpr());
-            for (int i = 0; i < expr_cast.coefficients.size(); i++) {
-                if (i != 0) {
+            boolean first = true;
+            for (Entry<NumVar, Double> entry : expr_cast.variablesAndCoefficients.entrySet()) {
+                if (entry.getValue() < 0) {
 
-                    if (expr_cast.coefficients.get(i) < 0) {
-                        fileWriter.write("- ");
-                    } else {
+                    fileWriter.write("- ");
+
+                } else {
+                    if (!first) {
                         fileWriter.write("+ ");
                     }
                 }
-                fileWriter.write(Math.abs(expr_cast.coefficients.get(i)) + " " + expr_cast.variables.get(i).getName() + " ");
-            }
 
+                fileWriter.write(Math.abs(entry.getValue()) + " " + entry.getKey().getName() + " ");
+                first = false;
+            }
             if (this.objective.getConstant() != 0) {
                 if (this.objective.getConstant() > 0) {
-                    fileWriter.write("+ " + this.objective.getConstant() );
+                    fileWriter.write("+ " + this.objective.getConstant());
                 } else {
-                    fileWriter.write("- " + Math.abs(this.objective.getConstant()) );
+                    fileWriter.write("- " + Math.abs(this.objective.getConstant()));
                 }
             }
             fileWriter.write("\n");
@@ -302,16 +309,19 @@ public class HiGHS implements Modeler {
                 HiGHSNumExpr lhs_expr = new HiGHSNumExpr(hiGHSConstraint.lhs);
                 HiGHSNumExpr rhs_expr = new HiGHSNumExpr(hiGHSConstraint.rhs);
                 fileWriter.write(hiGHSConstraint.getName() + ": ");
-                for (int i = 0; i < lhs_expr.coefficients.size(); i++) {
-                    if (i != 0) {
-                        if (lhs_expr.coefficients.get(i) < 0) {
-                            fileWriter.write("- ");
-                        } else {
+                first = true;
+                for (Entry<NumVar, Double> entry : lhs_expr.variablesAndCoefficients.entrySet()) {
+                    if (entry.getValue() < 0) {
+                        fileWriter.write("- ");
+                    } else {
+                        if (!first) {
                             fileWriter.write("+ ");
                         }
                     }
-                    fileWriter.write(Math.abs(lhs_expr.coefficients.get(i)) + " " + lhs_expr.variables.get(i).getName() + " ");
+                    fileWriter.write(Math.abs(entry.getValue()) + " " + entry.getKey().getName() + " ");
+                    first = false;
                 }
+
                 if (lhs_expr.constant > 0) {
                     fileWriter.write("+ " + lhs_expr.constant + " ");
                 } else if (lhs_expr.constant < 0) {
@@ -328,19 +338,28 @@ public class HiGHS implements Modeler {
                     throw new HiGHSException("Invalid constraint type: " + hiGHSConstraint.type);
                 }
                 //Write the right hand side
-                for (int i = 0; i < rhs_expr.coefficients.size(); i++) {
-                    if (rhs_expr.coefficients.get(i) < 0) {
+                first= true;
+                for (Entry<NumVar, Double> entry : rhs_expr.variablesAndCoefficients.entrySet()) {
+                    if (entry.getValue() < 0) {
                         fileWriter.write("- ");
                     } else {
-                        fileWriter.write("+ ");
+                        if(!first) {
+                            fileWriter.write("+ ");
+                        }
                     }
-                    fileWriter.write(Math.abs(rhs_expr.coefficients.get(i)) + " " + rhs_expr.variables.get(i).getName() + " ");
+                    fileWriter.write(Math.abs(entry.getValue()) + " " + entry.getKey().getName() + " ");
+                    first = false;
                 }
+
                 if (rhs_expr.constant > 0) {
-                    fileWriter.write("+ " + rhs_expr.constant );
+                    if (rhs_expr.variablesAndCoefficients.isEmpty()) {
+                        fileWriter.write(rhs_expr.constant + " ");
+                    } else {
+                        fileWriter.write("+ " + rhs_expr.constant);
+                    }
                 } else if (rhs_expr.constant < 0) {
-                    fileWriter.write("- " + Math.abs(rhs_expr.constant) );
-                } else if (rhs_expr.coefficients.isEmpty()) {
+                    fileWriter.write("- " + Math.abs(rhs_expr.constant));
+                } else if (rhs_expr.variablesAndCoefficients.isEmpty()) {
                     fileWriter.write(" 0 ");
                 }
                 fileWriter.write("\n");
@@ -414,7 +433,15 @@ public class HiGHS implements Modeler {
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
                 if (line.equalsIgnoreCase("Infeasible")) {
+                    this.status = Status.Infeasible;
                     throw new HiGHSException("The model is infeasible");
+                }
+                if (line.equalsIgnoreCase("Unbounded")) {
+                    this.status = Status.Unbounded;
+                    throw new HiGHSException("The model is unbounded");
+                }
+                if (line.equalsIgnoreCase("Optimal")) {
+                    this.status = Status.Optimal;
                 }
                 // Check for the start of the "Primal solution values" section
                 if (line.equalsIgnoreCase("# Primal solution values")) {
@@ -577,7 +604,7 @@ public class HiGHS implements Modeler {
      */
     public IntExpr prod(int i, IntExpr numVar) {
         HiGHSIntExpr expr = new HiGHSIntExpr(numVar);
-        expr.coefficients.replaceAll(v -> v * i);
+        expr.variablesAndCoefficients.replaceAll((k, v) -> v * i);
         expr.constant = expr.constant * i;
         return expr;
     }
@@ -602,7 +629,7 @@ public class HiGHS implements Modeler {
      */
     public NumExpr prod(double d, NumExpr numVar) {
         HiGHSNumExpr expr = new HiGHSNumExpr(numVar);
-        expr.coefficients.replaceAll(v -> v * d);
+        expr.variablesAndCoefficients.replaceAll((k, v) -> v * d);
         expr.constant = expr.constant * d;
         return expr;
     }
@@ -750,11 +777,25 @@ public class HiGHS implements Modeler {
         // Write to file and call the solver
         exportModel("out-" + uniqueID + ".lp");
         try {
-            ProcessBuilder processBuilder = new ProcessBuilder("highs", "--model_file", "out-" + uniqueID + ".lp" , "--solution_file", "out-" + uniqueID + ".sol");
-            processBuilder.redirectOutput(new File("out.txt"));
-            processBuilder.redirectError(new File("error.txt"));
+            ProcessBuilder processBuilder = new ProcessBuilder("highs", "--model_file", "out-" + uniqueID + ".lp", "--solution_file", "out-" + uniqueID + ".sol");
+            File outFile = new File("out.txt");
+            File errFile = new File("error.txt");
             Process process = processBuilder.start();
+            try (BufferedReader stdOutReader = new BufferedReader(new InputStreamReader(process.getInputStream())); BufferedReader stdErrReader = new BufferedReader(new InputStreamReader(process.getErrorStream())); PrintWriter outWriter = new PrintWriter(outFile); PrintWriter errWriter = new PrintWriter(errFile)) {
+                String line;
+                while ((line = stdOutReader.readLine()) != null) {
+                    outWriter.println(line);
+                    logger.info("[STDOUT] {}", line);
+                }
+
+                while ((line = stdErrReader.readLine()) != null) {
+                    errWriter.println(line);
+                    logger.error("[STDERR] {}", line);
+                }
+            }
+            // Log standard output
             int exitCode = process.waitFor();
+            logger.info("HiGHS solver exited with code: {}", exitCode);
             if (exitCode != 0) {
                 throw new RuntimeException("HiGHS solver failed with exit code: " + exitCode);
             }
@@ -765,7 +806,7 @@ public class HiGHS implements Modeler {
                 throw new RuntimeException("Failed to delete the file: " + file.getName());
             }
             file = new File("out-" + uniqueID + ".sol");
-            if (!file.delete()){
+            if (!file.delete()) {
                 throw new RuntimeException("Failed to delete the file: " + file.getName());
             }
 
@@ -784,20 +825,28 @@ public class HiGHS implements Modeler {
         HiGHSConstraint hiGHSConstraint = new HiGHSConstraint(constraint);
         HiGHSNumExpr lhs_expr = new HiGHSNumExpr(hiGHSConstraint.lhs);
         HiGHSNumExpr rhs_expr = new HiGHSNumExpr(hiGHSConstraint.rhs);
-
-        for (int i = 0; i < rhs_expr.variables.size(); i++) {
-            if (!lhs_expr.variables.contains(rhs_expr.variables.get(i))) {
-                lhs_expr.variables.add(rhs_expr.variables.get(i));
-                lhs_expr.coefficients.add(-rhs_expr.coefficients.get(i));
+        for (Entry<NumVar, Double> entry : rhs_expr.variablesAndCoefficients.entrySet()) {
+            if (!lhs_expr.variablesAndCoefficients.containsKey(entry.getKey())) {
+                lhs_expr.variablesAndCoefficients.put(entry.getKey(), -entry.getValue());
             } else {
-                int index = lhs_expr.variables.indexOf(rhs_expr.variables.get(i));
-                lhs_expr.coefficients.set(index, lhs_expr.coefficients.get(index) - rhs_expr.coefficients.get(i));
+                lhs_expr.variablesAndCoefficients.put(entry.getKey(), lhs_expr.variablesAndCoefficients.get(entry.getKey()) - entry.getValue());
             }
         }
         hiGHSConstraint.lhs = lhs_expr;
-        hiGHSConstraint.rhs = constant( rhs_expr.constant - lhs_expr.constant);
+        hiGHSConstraint.rhs = constant(rhs_expr.constant - lhs_expr.constant);
         lhs_expr.constant = 0.0;
         return hiGHSConstraint;
+    }
+
+    public Status getStatus() {
+        return this.status;
+    }
+
+    /**
+     * Enum representing the status of the optimization problem.
+     */
+    public enum Status {
+        Bounded, Error, Feasible, Infeasible, InfeasibleOrUnbounded, Optimal, Unbounded, Unknown
     }
 
 

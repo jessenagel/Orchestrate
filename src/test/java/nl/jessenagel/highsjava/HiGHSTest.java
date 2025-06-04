@@ -51,7 +51,6 @@ class HiGHSTest {
         objective = highs.sum(objective, highs.prod(3, x3));
         objective = highs.sum(objective, x4);
         highs.addMaximize(objective);
-
         // Export the model to a file
         highs.exportModel("test.lp");
     }
@@ -89,19 +88,60 @@ class HiGHSTest {
         objective = highs.sum(objective, highs.prod(3, x));
         objective = highs.sum(objective, highs.prod(4, y));
         highs.addMaximize(objective);
-
+        System.out.println(objective);
         // Export the model to a file
         highs.exportModel("test.lp");
 
         // Solve the model
         highs.solve();
-
+        assertEquals(HiGHS.Status.Optimal, highs.getStatus());
         // Check the solution
         assertEquals(6.0, highs.getValue(x), 0.01);
         assertEquals(4.0, highs.getValue(y), 0.01);
         assertEquals(34.0, highs.getObjValue(), 0.01);
     }
 
+
+    @Test
+    void solveLPWithNegativeFirstArgument(){
+        HiGHS highs = new HiGHS();
+        // Declare variables x and y
+        NumVar x = highs.numVar("x");
+        NumVar y = highs.numVar("y");
+
+        // Declare constraints
+        NumExpr lhs1 = highs.constant(0);
+        lhs1 = highs.sum(lhs1, x);
+        lhs1 = highs.sum(lhs1, highs.prod(2, y));
+        highs.addLe(lhs1, highs.constant(14)).setName("c1");
+
+        NumExpr lhs2 = highs.constant(0);
+        lhs2 = highs.sum(lhs2, highs.prod(3, x));
+        lhs2 = highs.sum(lhs2, highs.prod(-1, y));
+        highs.addGe(lhs2, highs.constant(0));
+
+        NumExpr lsh3 = highs.constant(0);
+        lsh3 = highs.sum(lsh3, x);
+        lsh3 = highs.sum(lsh3, highs.prod(-1, y));
+        highs.addLe(lsh3, highs.constant(2));
+
+        // Add objective function
+        NumExpr objective = highs.constant(0);
+        objective = highs.sum(objective, highs.prod(-3, x));
+        objective = highs.sum(objective, highs.prod(-4, y));
+        highs.addMinimize(objective);
+        System.out.println(objective);
+        // Export the model to a file
+        highs.exportModel("test.lp");
+
+        // Solve the model
+        highs.solve();
+        assertEquals(HiGHS.Status.Optimal, highs.getStatus());
+        // Check the solution
+        assertEquals(6.0, highs.getValue(x), 0.01);
+        assertEquals(4.0, highs.getValue(y), 0.01);
+        assertEquals(-34.0, highs.getObjValue(), 0.01);
+    }
     /**
      * Test for solving an integer programming model.
      * This test creates integer variables, constraints, and an objective function,
@@ -210,8 +250,8 @@ class HiGHSTest {
 
         assertEquals(0, lhsExpr.constant);
         assertEquals(10, rhsExpr.constant);
-        assertEquals(2, lhsExpr.variables.size());
-        assertEquals(0, rhsExpr.variables.size());
+        assertEquals(2, lhsExpr.variablesAndCoefficients.size());
+        assertEquals(0, rhsExpr.variablesAndCoefficients.size());
         assertEquals(ConstraintType.Eq, hConstraint.type);
     }
 
@@ -238,8 +278,8 @@ class HiGHSTest {
 
         assertEquals(0, lhsExpr.constant);
         assertEquals(10, rhsExpr.constant);
-        assertEquals(2, lhsExpr.variables.size());
-        assertEquals(0, rhsExpr.variables.size());
+        assertEquals(2, lhsExpr.variablesAndCoefficients.size());
+        assertEquals(0, rhsExpr.variablesAndCoefficients.size());
         assertEquals(ConstraintType.Le, hConstraint.type);
     }
 
@@ -262,8 +302,8 @@ class HiGHSTest {
 
         assertEquals(0, lhsExpr.constant);
         assertEquals(10, rhsExpr.constant);
-        assertEquals(2, lhsExpr.variables.size());
-        assertEquals(0, rhsExpr.variables.size());
+        assertEquals(2, lhsExpr.variablesAndCoefficients.size());
+        assertEquals(0, rhsExpr.variablesAndCoefficients.size());
         assertEquals(ConstraintType.Ge, hConstraint.type);
     }
 

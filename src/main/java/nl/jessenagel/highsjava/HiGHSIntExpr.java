@@ -2,7 +2,9 @@ package nl.jessenagel.highsjava;
 
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 /**
  * Represents an integer expression in the HiGHS model.
@@ -18,12 +20,7 @@ public class HiGHSIntExpr implements IntExpr {
     /**
      * The list of integer variables in the expression.
      */
-    List<IntVar> variables;
-
-    /**
-     * The list of integer coefficients corresponding to the variables.
-     */
-    List<Integer> coefficients;
+    LinkedHashMap<IntVar, Integer> variablesAndCoefficients;
 
     /**
      * The constant term in the integer expression.
@@ -56,8 +53,7 @@ public class HiGHSIntExpr implements IntExpr {
      */
     HiGHSIntExpr() {
         this.name = "IntExpr_" + HiGHSCounter.getNextVarCounter();
-        this.variables = new ArrayList<>();
-        this.coefficients = new ArrayList<>();
+        this.variablesAndCoefficients = new LinkedHashMap<>();
         this.constant = 0;
     }
 
@@ -83,13 +79,13 @@ public class HiGHSIntExpr implements IntExpr {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder(" ");
-        for (int i = 0; i < coefficients.size(); i++) {
-            if (coefficients.get(i) < 0) {
+        for(Entry<IntVar, Integer> entry : variablesAndCoefficients.entrySet()) {
+            if (entry.getValue() < 0) {
                 result.append("- ");
             } else {
                 result.append("+ ");
             }
-            result.append(Math.abs(coefficients.get(i))).append(" ").append(variables.get(i).getName()).append(" ");
+            result.append(Math.abs(entry.getValue())).append(" ").append(entry.getKey().getName()).append(" ");
         }
         result.append("+ ").append(constant);
         return result.toString();
