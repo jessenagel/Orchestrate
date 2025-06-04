@@ -3,6 +3,7 @@ package nl.jessenagel.highsjava;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class HiGHSIntExprVisitor implements IntExprVisitor {
     private final HiGHSIntExpr target;
@@ -39,5 +40,16 @@ public class HiGHSIntExprVisitor implements IntExprVisitor {
     @Override
     public void visit(HiGHSConstraint hiGHSConstraint) {
         throw new HiGHSException("Cannot visit HiGHSNumExpr in HiGHSIntExprVisitor");
+    }
+
+    @Override
+    public void visit(HiGHSSumExpr hiGHSSumExpr) {
+        throw new HiGHSException("Cannot visit HiGHSSumExpr in HiGHSIntExprVisitor");
+
+    }
+
+    @Override
+    public void visit(HiGHSProdExpr hiGHSProdExpr) {
+        throw new HiGHSException("Cannot visit HiGHSProdExpr in HiGHSIntExprVisitor");
     }
 }

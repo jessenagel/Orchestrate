@@ -174,21 +174,10 @@ public class HiGHS implements Modeler {
      */
     @Override
     public NumExpr sum(NumExpr e1, NumExpr e2) {
-        HiGHSNumExpr sum = new HiGHSNumExpr(e1);
-
-        HiGHSNumExpr addition = new HiGHSNumExpr(e2);
-        for (Entry<NumVar, Double> entry : addition.variablesAndCoefficients.entrySet()) {
-            NumVar variable = entry.getKey();
-            double coefficient = entry.getValue();
-            if (!sum.variablesAndCoefficients.containsKey(variable)) {
-                sum.variablesAndCoefficients.put(variable, coefficient);
-            } else {
-                sum.variablesAndCoefficients.put(variable, sum.variablesAndCoefficients.get(variable) + coefficient);
-            }
-        }
-        sum.constant += addition.constant;
+        HiGHSSumExpr sum = new HiGHSSumExpr();
+        sum.exprs.add(e1);
+        sum.exprs.add(e2);
         return sum;
-
     }
 
     /**

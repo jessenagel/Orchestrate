@@ -6,4 +6,6 @@ public interface NumExprVisitor {
     void visit(HiGHSIntVar expr);
     void visit(HiGHSNumVar expr);
     void visit(HiGHSConstraint hiGHSConstraint);
+    void visit(HiGHSSumExpr hiGHSSumExpr);
+    void visit(HiGHSProdExpr hiGHSProdExpr);
 }
