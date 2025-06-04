@@ -266,7 +266,7 @@ class HiGHSTest {
             for (int j = 0; j < numVars; j++) {
                 double coeff = integer ? rand.nextInt(11) - 5 : -5 + 10 * rand.nextDouble(); // [-5, 5)
                 NumExpr term = highs.prod(coeff, vars[j]);
-                lhs = (lhs == null) ? term : highs.sum(lhs, term);
+                lhs = highs.sum(lhs, term);
                 dotProduct += coeff * xFeasible[j];
             }
 
