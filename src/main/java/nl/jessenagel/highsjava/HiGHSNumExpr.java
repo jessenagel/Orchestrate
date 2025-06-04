@@ -53,7 +53,7 @@ public class HiGHSNumExpr implements NumExpr {
      */
     HiGHSNumExpr() {
         this.name = "NumExpr_" + HiGHSCounter.getNextVarCounter();
-        this.variablesAndCoefficients = new LinkedHashMap<>();;
+        this.variablesAndCoefficients = new LinkedHashMap<>();
         this.constant = 0.0;
     }
 
