@@ -1,5 +1,7 @@
 package nl.jessenagel.highsjava;
 
+import java.util.Objects;
+
 /**
  * Represents a numerical variable in the HiGHS model.
  * A numerical variable has a name, lower bound, and upper bound.
@@ -108,5 +110,18 @@ public class HiGHSNumVar implements NumVar {
     @Override
     public void accept(NumExprVisitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        NumVar numVar = (NumVar) obj;
+        return Objects.equals(name, numVar.getName()); // Compare based on variable name
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name); // Generate hash based on variable name
     }
 }

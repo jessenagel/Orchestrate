@@ -47,6 +47,9 @@ public class HiGHSObjective implements Objective {
         if (expr instanceof HiGHSIntExpr expr_cast) {
             return expr_cast.constant.doubleValue();
         }
+        if (expr instanceof HiGHSSumExpr expr_cast) {
+            return new HiGHSNumExpr(expr_cast).constant;
+        }
         throw new HiGHSException("Invalid expression type for constant: " + expr.getClass());
     }
 

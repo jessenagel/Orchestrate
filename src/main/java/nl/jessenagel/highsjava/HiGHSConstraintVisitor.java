@@ -36,4 +36,15 @@ public class HiGHSConstraintVisitor implements ConstraintVisitor {
         target.rhs = constraint.rhs;
         target.type = constraint.type;
     }
+
+    @Override
+    public void visit(HiGHSSumExpr hiGHSSumExpr) {
+        throw new HiGHSException("Cannot visit HiGHSSumVar in HiGHSConstraintVisitor");
+
+    }
+    @Override
+    public void visit(HiGHSProdExpr hiGHSProdExpr) {
+        throw new HiGHSException("Cannot visit HiGHSProdExpr in HiGHSConstraintVisitor");
+
+    }
 }

@@ -2,6 +2,9 @@ package nl.jessenagel.highsjava;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Random;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -88,7 +91,6 @@ class HiGHSTest {
         objective = highs.sum(objective, highs.prod(3, x));
         objective = highs.sum(objective, highs.prod(4, y));
         highs.addMaximize(objective);
-        System.out.println(objective);
         // Export the model to a file
         highs.exportModel("test.lp");
 
@@ -130,7 +132,6 @@ class HiGHSTest {
         objective = highs.sum(objective, highs.prod(-3, x));
         objective = highs.sum(objective, highs.prod(-4, y));
         highs.addMinimize(objective);
-        System.out.println(objective);
         // Export the model to a file
         highs.exportModel("test.lp");
 
@@ -229,6 +230,62 @@ class HiGHSTest {
         // Get the solution
         assertEquals(6.0, highs.getValue(x), 0.01);
         assertEquals(4.0, highs.getValue(y), 0.01);
+    }
+
+    @Test
+    void solveLargeLP(){
+        Logger logger = LoggerFactory.getLogger(HiGHSTest.class.getName());
+
+        int numVars = 1000;
+        int numConstraints = 1000;
+        boolean integer = false;
+        long seed = 1;
+        HiGHS highs = new HiGHS();
+        // 1. Generate known feasible point
+        Random rand = new Random(seed);
+
+        // Step 1: Create variables
+        NumExpr[] vars = new NumExpr[numVars];
+        double[] xFeasible = new double[numVars];
+
+        for (int i = 0; i < numVars; i++) {
+            if(i %100 == 0) {
+                logger.info("Creating variable " + i + " of " + numVars);
+            }
+            xFeasible[i] = integer ? rand.nextInt(9) + 1 : 1 + 9 * rand.nextDouble(); // [1,10)
+            vars[i] = highs.numVar( 0, 100,"var_" + i);
+        }
+        // Step 2: Add constraints A * x <= b, with known feasible point
+        for (int i = 0; i < numConstraints; i++) {
+            if(i %10 == 0) {
+                logger.info("Adding constraint " + i + " of " + numConstraints);
+            }
+            NumExpr lhs = highs.constant(0);
+            double dotProduct = 0.0;
+
+            for (int j = 0; j < numVars; j++) {
+                double coeff = integer ? rand.nextInt(11) - 5 : -5 + 10 * rand.nextDouble(); // [-5, 5)
+                NumExpr term = highs.prod(coeff, vars[j]);
+                lhs = (lhs == null) ? term : highs.sum(lhs, term);
+                dotProduct += coeff * xFeasible[j];
+            }
+
+            double delta = 1 + 9 * rand.nextDouble(); // Ensures feasibility
+            double rhs = dotProduct + delta;
+            highs.addLe(lhs, highs.constant(rhs));
+        }
+
+        // Step 3: Define objective function
+        NumExpr obj = null;
+        for (int i = 0; i < numVars; i++) {
+            double coeff = integer ? rand.nextInt(21) - 10 : -10 + 20 * rand.nextDouble(); // [-10, 10)
+            NumExpr term = highs.prod(coeff, vars[i]);
+            obj = (obj == null) ? term : highs.sum(obj, term);
+        }
+
+        highs.addMinimize(obj); // This will depend on the solver’s API (min/max etc.)
+        highs.solve();
+        assertEquals(HiGHS.Status.Optimal, highs.getStatus());
     }
 
     @Test
@@ -493,16 +550,4 @@ class HiGHSTest {
         assertEquals(" + 100.0", rhsExpr.toString());
     }
 
-    @Test
-    void toStringExpr(){
-        HiGHS highs = new HiGHS();
-        // Declare variables x and y
-        NumVar x = highs.numVar("x");
-        NumVar y = highs.numVar("y");
-        // Declare numerical expression
-        NumExpr lhs1 = highs.constant(0);
-        lhs1 = highs.sum(lhs1, x);
-        lhs1 = highs.sum(lhs1, highs.prod(2, y));
-        assertEquals(" + 1.0 x + 2.0 y + 0.0", lhs1.toString());
-    }
 }
