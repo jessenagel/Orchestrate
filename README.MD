@@ -62,7 +62,7 @@ public class Example {
 
 
 ## Roadmap
-- [ ] Fully implement the Concert API.
+- [ ] Extend the API to support more features from open-source solvers.
 - [ ] Implement support for more open-source solvers.
 - [ ] Add more examples and documentation.
 
