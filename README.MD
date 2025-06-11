@@ -1,13 +1,14 @@
-# HiGHS Java Integration
+# Orchestrate
 
-This project provides a Java-based interface for working with the HiGHS solver, a high-performance open-source optimization solver for linear programming (LP), mixed-integer programming (MIP), and quadratic programming (QP).
-
+This project provides a Java-based interface for working with (Integer) Linear Programs.
+It is designed to be compatible with the IBM ILOG Concert API. 
+It is intended to be used with the HiGHS solver, an open-source high-performance linear programming solver.
 
 ## Disclaimer
-This project is still in early development and may not be fully functional. The API and features are subject to change as the project evolves. 
-Right now only the basic functionality is implemented. IP/LP problems can be solved, but the API is not yet complete.
-## Features
+**This project is not affiliated with, endorsed by, or sponsored by IBM or ILOG. ILOG, Concert, and CPLEX are trademarks of IBM Corporation.**
 
+**This project is not affiliated with, endorsed by, or sponsored by HiGHS solver**
+## Features
 - Define and manage variables, constraints, and objectives.
 - Support for numerical and integer expressions.
 - Integration with the HiGHS solver for solving optimization problems.
@@ -61,10 +62,9 @@ public class Example {
 
 
 ## Roadmap
-Currently, this API works by generating a `.lp` file and calling the HiGHS binary to solve the problem.
-A more efficient approach would be to use the HiGHS C++ API directly from Java.
-The HiGHS4j project, which provides a Java interface to the HiGHS C++ API, does this but was not compatible with my requirements.
-Therefore, I decided to create this project.
+- [ ] Extend the API to support more features from open-source solvers.
+- [ ] Implement support for more open-source solvers.
+- [ ] Add more examples and documentation.
 
 ## License
 This project is licensed under the MIT License. See the LICENSE file for details.

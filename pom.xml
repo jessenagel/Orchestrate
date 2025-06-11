@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>nl.jessenagel.highsjava</groupId>
-    <artifactId>highs-java</artifactId>
-    <version>1.1.7-ALPHA</version>
+    <groupId>nl.jessenagel.orchestrate</groupId>
+    <artifactId>orchestrate</artifactId>
+    <version>1.1.8-ALPHA</version>
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
@@ -36,5 +36,4 @@
             <version>2.0.16</version>
         </dependency>
     </dependencies>
-
 </project>
