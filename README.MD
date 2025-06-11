@@ -1,7 +1,7 @@
 # Orchestrate
 
 This project provides a Java-based interface for working with (Integer) Linear Programs.
-It is designed to compatible with the IBM ILOG Concert API. 
+It is designed to be compatible with the IBM ILOG Concert API. 
 It is intended to be used with the HiGHS solver, an open-source high-performance linear programming solver.
 
 ## Disclaimer
