@@ -38,7 +38,7 @@ Download the latest release, or clone the repository and build it from source:
 ```java
 public class Example {
     public static void main(String[] args) {
-        HiGHS highs = new HiGHS();
+        Orchestrate highs = new Orchestrate();
         
         //Creating variables
         NumVar x = highs.numVar(0, 10, "x");
