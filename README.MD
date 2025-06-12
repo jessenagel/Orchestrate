@@ -38,24 +38,24 @@ Download the latest release, or clone the repository and build it from source:
 ```java
 public class Example {
     public static void main(String[] args) {
-        Orchestrate highs = new Orchestrate();
+        Orchestrate solver = new Orchestrate();
         
         //Creating variables
-        NumVar x = highs.numVar(0, 10, "x");
-        IntVar y = highs.boolVar("y");
+        NumVar x = solver.numVar(0, 10, "x");
+        IntVar y = solver.boolVar("y");
         
         //Adding constraints
-        highs.addLe(x, highs.constant(5));
-        highs.addGe(x, y);
+        solver.addLe(x, solver.constant(5));
+        solver.addGe(x, y);
         
         //Setting the Objective
-        highs.setObjective(x, ObjectiveSense.Minimize);
+        solver.setObjective(x, ObjectiveSense.Minimize);
 
         //Solving the model
-        highs.solve();
+        solver.solve();
         
        //Getting a value
-        double xValue = highs.getValue(x);
+        double xValue = solver.getValue(x);
     }
 }
 ```
