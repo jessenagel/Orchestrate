@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>nl.jessenagel.orchestrate</groupId>
-    <artifactId>orchestrate</artifactId>
-    <version>1.1.8-ALPHA</version>
+    <artifactId>Orchestrate</artifactId>
+    <version>1.1.9-ALPHA</version>
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
@@ -34,6 +34,11 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>2.0.16</version>
+        </dependency>
+        <dependency>
+            <groupId>nl.jessenagel.jhighs</groupId>
+            <artifactId>jhighs</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

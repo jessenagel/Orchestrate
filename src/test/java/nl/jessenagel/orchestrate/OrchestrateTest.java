@@ -236,7 +236,7 @@ class OrchestrateTest {
         Logger logger = LoggerFactory.getLogger(OrchestrateTest.class.getName());
 
         int numVars = 1000;
-        int numConstraints = 1000;
+        int numConstraints = 2000;
         boolean integer = false;
         long seed = 1;
         Orchestrate orchestrate = new Orchestrate();
@@ -287,6 +287,61 @@ class OrchestrateTest {
         assertEquals(Orchestrate.Status.Optimal, orchestrate.getStatus());
     }
 
+    @Test
+    void solveLargeLPUsingFile(){
+        Logger logger = LoggerFactory.getLogger(OrchestrateTest.class.getName());
+
+        int numVars = 1000;
+        int numConstraints = 1000;
+        boolean integer = false;
+        long seed = 1;
+        Orchestrate orchestrate = new Orchestrate();
+        // 1. Generate known feasible point
+        Random rand = new Random(seed);
+
+        // Step 1: Create variables
+        NumExpr[] vars = new NumExpr[numVars];
+        double[] xFeasible = new double[numVars];
+
+        for (int i = 0; i < numVars; i++) {
+            if(i %100 == 0) {
+                logger.info("Creating variable " + i + " of " + numVars);
+            }
+            xFeasible[i] = integer ? rand.nextInt(9) + 1 : 1 + 9 * rand.nextDouble(); // [1,10)
+            vars[i] = orchestrate.numVar( 0, 100,"var_" + i);
+        }
+        // Step 2: Add constraints A * x <= b, with known feasible point
+        for (int i = 0; i < numConstraints; i++) {
+            if(i %10 == 0) {
+                logger.info("Adding constraint " + i + " of " + numConstraints);
+            }
+            NumExpr lhs = orchestrate.constant(0);
+            double dotProduct = 0.0;
+
+            for (int j = 0; j < numVars; j++) {
+                double coeff = integer ? rand.nextInt(11) - 5 : -5 + 10 * rand.nextDouble(); // [-5, 5)
+                NumExpr term = orchestrate.prod(coeff, vars[j]);
+                lhs = orchestrate.sum(lhs, term);
+                dotProduct += coeff * xFeasible[j];
+            }
+
+            double delta = 1 + 9 * rand.nextDouble(); // Ensures feasibility
+            double rhs = dotProduct + delta;
+            orchestrate.addLe(lhs, orchestrate.constant(rhs));
+        }
+
+        // Step 3: Define objective function
+        NumExpr obj = null;
+        for (int i = 0; i < numVars; i++) {
+            double coeff = integer ? rand.nextInt(21) - 10 : -10 + 20 * rand.nextDouble(); // [-10, 10)
+            NumExpr term = orchestrate.prod(coeff, vars[i]);
+            obj = (obj == null) ? term : orchestrate.sum(obj, term);
+        }
+
+        orchestrate.addMinimize(obj); // This will depend on the solver’s API (min/max etc.)
+        orchestrate.solveByExportingFile();
+        assertEquals(Orchestrate.Status.Optimal, orchestrate.getStatus());
+    }
     @Test
     void addEq() {
         Orchestrate orchestrate = new Orchestrate();

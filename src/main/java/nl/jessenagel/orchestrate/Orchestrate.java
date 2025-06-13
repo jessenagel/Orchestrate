@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
-
+import nl.jessenagel.jhighs.*;
 /**
  * Orchestrate is the class used to create LP models to be solved using an external olver
  */
@@ -14,6 +14,7 @@ public class Orchestrate implements Modeler {
     final Logger logger = LoggerFactory.getLogger(Orchestrate.class);
     private final List<Constraint> constraints;
     private final List<NumVar> variables;
+    private final Map<NumVar, Integer> varToIndex;
     private final Map<NumVar, Double> solutionValues;
     private String name;
     private OrchObjective objective;
@@ -31,6 +32,7 @@ public class Orchestrate implements Modeler {
         this.variables = new ArrayList<>();
         this.solutionValues = new HashMap<>();
         this.status = Status.Unknown;
+        this.varToIndex = new HashMap<>();
     }
 
     /**
@@ -477,6 +479,8 @@ public class Orchestrate implements Modeler {
     public IntVar boolVar() {
         OrchBoolVar var = new OrchBoolVar();
         variables.add(var);
+        varToIndex.put(var, varCounter);
+        varCounter++;
         return var;
     }
 
@@ -490,6 +494,8 @@ public class Orchestrate implements Modeler {
         OrchBoolVar var = new OrchBoolVar();
         var.setName(name);
         variables.add(var);
+        varToIndex.put(var, varCounter);
+        varCounter++;
         return var;
     }
 
@@ -501,6 +507,8 @@ public class Orchestrate implements Modeler {
     public IntVar intVar() {
         OrchIntVar var = new OrchIntVar();
         variables.add(var);
+        varToIndex.put(var, varCounter);
+        varCounter++;
         return var;
     }
 
@@ -514,6 +522,8 @@ public class Orchestrate implements Modeler {
         OrchIntVar var = new OrchIntVar();
         var.setName(name);
         variables.add(var);
+        varToIndex.put(var, varCounter);
+        varCounter++;
         return var;
     }
 
@@ -529,6 +539,8 @@ public class Orchestrate implements Modeler {
         var.setMin(min);
         var.setMax(max);
         variables.add(var);
+        varToIndex.put(var, varCounter);
+        varCounter++;
         return var;
     }
 
@@ -546,6 +558,8 @@ public class Orchestrate implements Modeler {
         var.setMax(max);
         var.setName(name);
         variables.add(var);
+        varToIndex.put(var, varCounter);
+        varCounter++;
         return var;
     }
 
@@ -740,6 +754,8 @@ public class Orchestrate implements Modeler {
         var.setUB(ub);
         var.setName(name);
         variables.add(var);
+        varToIndex.put(var, varCounter);
+        varCounter++;
         return var;
     }
 
@@ -753,6 +769,8 @@ public class Orchestrate implements Modeler {
         OrchNumVar var = new OrchNumVar();
         var.setName(name);
         variables.add(var);
+        varToIndex.put(var, varCounter);
+        varCounter++;
         return var;
     }
 
@@ -761,7 +779,7 @@ public class Orchestrate implements Modeler {
      *
      * @throws RuntimeException If an error occurs during the solving process.
      */
-    public void solve() {
+    public void solveByExportingFile() {
         String uniqueID = UUID.randomUUID().toString();
         // Write to file and call the solver
         exportModel("out-" + uniqueID + ".lp");
@@ -804,6 +822,72 @@ public class Orchestrate implements Modeler {
         }
     }
 
+    /**
+     * Solves the model by calling the HiGHS solver directly through the JHighs library.
+     *
+     * @throws RuntimeException If an error occurs during the solving process.
+     */
+    public void solve() {
+        HiGHS solver = new HiGHS();
+        // Add the variables to the solver
+        for (NumVar variable : variables) {
+            solver.addVar(variable.getLB(), variable.getUB());
+            if (variable instanceof OrchIntVar ) {
+                solver.changeColIntegrality(varToIndex.get(variable),VarType.kInteger);
+            }
+        }
+        // Add the constraints to the solver
+        for (Constraint constraint : constraints) {
+            OrchConstraint orchConstraint = new OrchConstraint(constraint);
+            OrchNumExpr lhs_expr = new OrchNumExpr(orchConstraint.lhs);
+            OrchNumExpr rhs_expr = new OrchNumExpr(orchConstraint.rhs);
+            double[] coeffs = new double[lhs_expr.variablesAndCoefficients.size()];
+            int[] vars = new int[lhs_expr.variablesAndCoefficients.size()];
+            int i = 0;
+            for (Entry<NumVar, Double> entry : lhs_expr.variablesAndCoefficients.entrySet()) {
+                vars[i] = varToIndex.get(entry.getKey());
+                coeffs[i] = entry.getValue();
+                i++;
+            }
+            if(orchConstraint.type == ConstraintType.Eq) {
+                solver.addConstraint(coeffs, vars, rhs_expr.constant, rhs_expr.constant);
+            } else if(orchConstraint.type == ConstraintType.Le) {
+                solver.addConstraint(coeffs, vars, Double.NEGATIVE_INFINITY, rhs_expr.constant);
+            } else if(orchConstraint.type == ConstraintType.Ge) {
+                solver.addConstraint(coeffs, vars, rhs_expr.constant, Double.POSITIVE_INFINITY);
+            } else {
+                throw new OrchException("Invalid constraint type: " + orchConstraint.type);
+            }
+        }
+        // Set the objective function
+        OrchNumExpr objectiveExpr = new OrchNumExpr(this.objective.getExpr());
+        double[] objCoeffs = new double[objectiveExpr.variablesAndCoefficients.size()];
+        int[] objVars = new int[objectiveExpr.variablesAndCoefficients.size()];
+        int i = 0;
+        //Todo: Check if this is correct
+        for (Entry<NumVar, Double> entry : objectiveExpr.variablesAndCoefficients.entrySet()) {
+            objVars[i] = varToIndex.get(entry.getKey());
+            objCoeffs[i] = entry.getValue();
+            i++;
+        }
+        solver.setObjectiveFunction(objCoeffs, objVars, this.objective.sense == ObjectiveSense.Minimize, objectiveExpr.constant);
+
+        HighsStatus highsStatus = solver.solve();
+        if (highsStatus == HighsStatus.kOk){
+            this.status = Status.Optimal;
+            // Import the solution values
+            Solution solution = solver.getSolution();
+            double[] values = solution.getVariableValues();
+            for (int j = 0; j < values.length; j++) {
+                NumVar variable = variables.get(j);
+                this.solutionValues.put(variable, values[j]);
+            }
+            this.objectiveValue = solution.getObjectiveValue();
+        } else if (highsStatus == HighsStatus.kError) {
+            this.status = Status.Error;
+            throw new OrchException("An error occurred while solving the model: " + highsStatus);
+        }
+    }
     /**
      * Rebalances the constraint by subtracting the right-hand side from the left-hand side.
      *
