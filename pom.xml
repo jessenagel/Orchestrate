@@ -6,7 +6,7 @@
 
     <groupId>nl.jessenagel.optimization</groupId>
     <artifactId>orchestrate</artifactId>
-    <version>1.1.9-ALPHA</version>
+    <version>0.1.0</version>
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
@@ -24,21 +24,12 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>2.0.16</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.12</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>2.0.16</version>
-        </dependency>
-        <dependency>
-            <groupId>nl.jessenagel.jhighs</groupId>
+            <groupId>nl.jessenagel.optimization</groupId>
             <artifactId>jhighs</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>0.1.0</version>
         </dependency>
     </dependencies>
 </project>
