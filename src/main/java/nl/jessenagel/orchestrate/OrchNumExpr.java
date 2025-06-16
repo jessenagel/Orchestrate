@@ -14,9 +14,14 @@ public class OrchNumExpr implements NumExpr {
     String name;
 
     /**
-     * The list of numerical variables in the expression.
+     * An array of coefficients for the integer variables in the expression.
      */
-    Map<NumVar, Double> variablesAndCoefficients;
+    double[] coefficients;
+    /**
+     * An array of integer variables in the expression.
+     */
+    int[] variables;
+    int numberOfVariables;
 
     /**
      * The constant term in the numerical expression.
@@ -39,11 +44,14 @@ public class OrchNumExpr implements NumExpr {
      *
      * @param var The variable to include in the expression.
      */
-    public OrchNumExpr(NumVar var) {
+    public OrchNumExpr(int var) {
         this.name = "NumExpr_" + OrchCounter.getNextVarCounter();
-        this.variablesAndCoefficients = new LinkedHashMap<>();
+        this.coefficients = new double[1];
+        this.variables = new int[1];
+        this.coefficients[0] = 1.0;
+        this.variables[0] = var;
         this.constant = 0.0;
-        this.variablesAndCoefficients.put(var,1.0);
+        this.numberOfVariables = 1;
     }
 
     /**
@@ -51,8 +59,10 @@ public class OrchNumExpr implements NumExpr {
      */
     OrchNumExpr() {
         this.name = "NumExpr_" + OrchCounter.getNextVarCounter();
-        this.variablesAndCoefficients = new LinkedHashMap<>();
+        this.coefficients = new double[0];
+        this.variables = new int[0];
         this.constant = 0.0;
+        this.numberOfVariables = 0;
     }
 
     @Override
@@ -80,20 +90,4 @@ public class OrchNumExpr implements NumExpr {
         this.name = name;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder result = new StringBuilder(" ");
-        for(Entry<NumVar,Double> entry : variablesAndCoefficients.entrySet()) {
-            NumVar variable = entry.getKey();
-            Double coefficient = entry.getValue();
-            if (coefficient < 0) {
-                result.append("- ");
-            } else {
-                result.append("+ ");
-            }
-            result.append(Math.abs(coefficient)).append(" ").append(variable.getName()).append(" ");
-        }
-        result.append("+ ").append(constant);
-        return result.toString();
-    }
 }

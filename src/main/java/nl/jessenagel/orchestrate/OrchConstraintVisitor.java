@@ -42,9 +42,5 @@ public class OrchConstraintVisitor implements ConstraintVisitor {
         throw new OrchException("Cannot visit OrchSumExpr in OrchConstraintVisitor");
 
     }
-    @Override
-    public void visit(OrchProdExpr orchProdExpr) {
-        throw new OrchException("Cannot visit OrchProdExpr in OrchConstraintVisitor");
 
-    }
 }

@@ -125,18 +125,9 @@ public class Orchestrate implements Modeler {
      */
     @Override
     public IntExpr sum(IntExpr e1, IntExpr e2) {
-        OrchIntExpr sum = new OrchIntExpr(e1);
-        OrchIntExpr addition = new OrchIntExpr(e2);
-        for (Entry<IntVar, Integer> entry : addition.variablesAndCoefficients.entrySet()) {
-            IntVar variable = entry.getKey();
-            int coefficient = entry.getValue();
-            if (!sum.variablesAndCoefficients.containsKey(variable)) {
-                sum.variablesAndCoefficients.put(variable, coefficient);
-            } else {
-                sum.variablesAndCoefficients.put(variable, sum.variablesAndCoefficients.get(variable) + coefficient);
-            }
-        }
-        sum.constant += addition.constant;
+        OrchSumExpr sum = new OrchSumExpr();
+        sum.exprs.add(e1);
+        sum.exprs.add(e2);
         return sum;
     }
 
@@ -270,8 +261,8 @@ public class Orchestrate implements Modeler {
             //Write the objective function
             OrchNumExpr expr_cast = new OrchNumExpr(this.objective.getExpr());
             boolean first = true;
-            for (Entry<NumVar, Double> entry : expr_cast.variablesAndCoefficients.entrySet()) {
-                if (entry.getValue() < 0) {
+            for (int i = 0; i < expr_cast.variables.length; i++) {
+                if (expr_cast.coefficients[i] < 0) {
 
                     fileWriter.write("- ");
 
@@ -281,7 +272,7 @@ public class Orchestrate implements Modeler {
                     }
                 }
 
-                fileWriter.write(Math.abs(entry.getValue()) + " " + entry.getKey().getName() + " ");
+                fileWriter.write(Math.abs(expr_cast.coefficients[i]) + " " + this.variables.get(expr_cast.variables[i]).getName() + " ");
                 first = false;
             }
             if (this.objective.getConstant() != 0) {
@@ -301,15 +292,15 @@ public class Orchestrate implements Modeler {
                 OrchNumExpr rhs_expr = new OrchNumExpr(orchConstraint.rhs);
                 fileWriter.write(orchConstraint.getName() + ": ");
                 first = true;
-                for (Entry<NumVar, Double> entry : lhs_expr.variablesAndCoefficients.entrySet()) {
-                    if (entry.getValue() < 0) {
+                for (int i = 0; i < lhs_expr.variables.length; i++) {
+                    if (lhs_expr.coefficients[i] < 0) {
                         fileWriter.write("- ");
                     } else {
                         if (!first) {
                             fileWriter.write("+ ");
                         }
                     }
-                    fileWriter.write(Math.abs(entry.getValue()) + " " + entry.getKey().getName() + " ");
+                    fileWriter.write(Math.abs(lhs_expr.coefficients[i]) + " " + this.variables.get(lhs_expr.variables[i]).getName() + " ");
                     first = false;
                 }
 
@@ -330,27 +321,27 @@ public class Orchestrate implements Modeler {
                 }
                 //Write the right hand side
                 first= true;
-                for (Entry<NumVar, Double> entry : rhs_expr.variablesAndCoefficients.entrySet()) {
-                    if (entry.getValue() < 0) {
+                for (int i = 0; i < rhs_expr.variables.length; i++) {
+                    if (rhs_expr.coefficients[i] < 0) {
                         fileWriter.write("- ");
                     } else {
                         if(!first) {
                             fileWriter.write("+ ");
                         }
                     }
-                    fileWriter.write(Math.abs(entry.getValue()) + " " + entry.getKey().getName() + " ");
+                    fileWriter.write(Math.abs(rhs_expr.coefficients[i]) + " " + this.variables.get(rhs_expr.variables[i]).getName() + " ");
+
                     first = false;
                 }
-
                 if (rhs_expr.constant > 0) {
-                    if (rhs_expr.variablesAndCoefficients.isEmpty()) {
+                    if (rhs_expr.numberOfVariables < 1) {
                         fileWriter.write(rhs_expr.constant + " ");
                     } else {
                         fileWriter.write("+ " + rhs_expr.constant);
                     }
                 } else if (rhs_expr.constant < 0) {
                     fileWriter.write("- " + Math.abs(rhs_expr.constant));
-                } else if (rhs_expr.variablesAndCoefficients.isEmpty()) {
+                } else if (rhs_expr.numberOfVariables < 1) {
                     fileWriter.write(" 0 ");
                 }
                 fileWriter.write("\n");
@@ -477,7 +468,7 @@ public class Orchestrate implements Modeler {
      * @return The created boolean variable.
      */
     public IntVar boolVar() {
-        OrchBoolVar var = new OrchBoolVar();
+        OrchBoolVar var = new OrchBoolVar(varCounter);
         variables.add(var);
         varToIndex.put(var, varCounter);
         varCounter++;
@@ -491,7 +482,7 @@ public class Orchestrate implements Modeler {
      * @return The created boolean variable.
      */
     public IntVar boolVar(String name) {
-        OrchBoolVar var = new OrchBoolVar();
+        OrchBoolVar var = new OrchBoolVar(varCounter);
         var.setName(name);
         variables.add(var);
         varToIndex.put(var, varCounter);
@@ -505,7 +496,7 @@ public class Orchestrate implements Modeler {
      * @return The created integer variable.
      */
     public IntVar intVar() {
-        OrchIntVar var = new OrchIntVar();
+        OrchIntVar var = new OrchIntVar(varCounter);
         variables.add(var);
         varToIndex.put(var, varCounter);
         varCounter++;
@@ -519,7 +510,7 @@ public class Orchestrate implements Modeler {
      * @return The created integer variable.
      */
     public IntVar intVar(String name) {
-        OrchIntVar var = new OrchIntVar();
+        OrchIntVar var = new OrchIntVar(varCounter);
         var.setName(name);
         variables.add(var);
         varToIndex.put(var, varCounter);
@@ -535,7 +526,7 @@ public class Orchestrate implements Modeler {
      * @return The created integer variable.
      */
     public IntVar intVar(int min, int max) {
-        OrchIntVar var = new OrchIntVar();
+        OrchIntVar var = new OrchIntVar(varCounter);
         var.setMin(min);
         var.setMax(max);
         variables.add(var);
@@ -553,7 +544,7 @@ public class Orchestrate implements Modeler {
      * @return The created integer variable.
      */
     public IntVar intVar(int min, int max, String name) {
-        OrchIntVar var = new OrchIntVar();
+        OrchIntVar var = new OrchIntVar(varCounter);
         var.setMin(min);
         var.setMax(max);
         var.setName(name);
@@ -607,7 +598,9 @@ public class Orchestrate implements Modeler {
      */
     public IntExpr prod(int i, IntExpr numVar) {
         OrchIntExpr expr = new OrchIntExpr(numVar);
-        expr.variablesAndCoefficients.replaceAll((k, v) -> v * i);
+        for(int index = 0; index < expr.variables.length; index++) {
+            expr.coefficients[index] = expr.coefficients[index] * i;
+        }
         expr.constant = expr.constant * i;
         return expr;
     }
@@ -632,7 +625,9 @@ public class Orchestrate implements Modeler {
      */
     public NumExpr prod(double d, NumExpr numVar) {
         OrchNumExpr expr = new OrchNumExpr(numVar);
-        expr.variablesAndCoefficients.replaceAll((k, v) -> v * d);
+        for(int index = 0; index < expr.variables.length; index++) {
+            expr.coefficients[index] = expr.coefficients[index] * d;
+        }
         expr.constant = expr.constant * d;
         return expr;
     }
@@ -749,7 +744,7 @@ public class Orchestrate implements Modeler {
      * @return The created numerical variable.
      */
     public NumVar numVar(int lb, int ub, String name) {
-        OrchNumVar var = new OrchNumVar();
+        OrchNumVar var = new OrchNumVar(this.varCounter);
         var.setLB(lb);
         var.setUB(ub);
         var.setName(name);
@@ -766,7 +761,7 @@ public class Orchestrate implements Modeler {
      * @return The created numerical variable.
      */
     public NumVar numVar(String name) {
-        OrchNumVar var = new OrchNumVar();
+        OrchNumVar var = new OrchNumVar(varCounter);
         var.setName(name);
         variables.add(var);
         varToIndex.put(var, varCounter);
@@ -841,36 +836,22 @@ public class Orchestrate implements Modeler {
             OrchConstraint orchConstraint = new OrchConstraint(constraint);
             OrchNumExpr lhs_expr = new OrchNumExpr(orchConstraint.lhs);
             OrchNumExpr rhs_expr = new OrchNumExpr(orchConstraint.rhs);
-            double[] coeffs = new double[lhs_expr.variablesAndCoefficients.size()];
-            int[] vars = new int[lhs_expr.variablesAndCoefficients.size()];
             int i = 0;
-            for (Entry<NumVar, Double> entry : lhs_expr.variablesAndCoefficients.entrySet()) {
-                vars[i] = varToIndex.get(entry.getKey());
-                coeffs[i] = entry.getValue();
-                i++;
-            }
+
             if(orchConstraint.type == ConstraintType.Eq) {
-                solver.addConstraint(coeffs, vars, rhs_expr.constant, rhs_expr.constant);
+                solver.addConstraint(lhs_expr.coefficients, lhs_expr.variables, rhs_expr.constant, rhs_expr.constant);
             } else if(orchConstraint.type == ConstraintType.Le) {
-                solver.addConstraint(coeffs, vars, Double.NEGATIVE_INFINITY, rhs_expr.constant);
+                solver.addConstraint(lhs_expr.coefficients,  lhs_expr.variables, Double.NEGATIVE_INFINITY, rhs_expr.constant);
             } else if(orchConstraint.type == ConstraintType.Ge) {
-                solver.addConstraint(coeffs, vars, rhs_expr.constant, Double.POSITIVE_INFINITY);
+                solver.addConstraint(lhs_expr.coefficients,  lhs_expr.variables, rhs_expr.constant, Double.POSITIVE_INFINITY);
             } else {
                 throw new OrchException("Invalid constraint type: " + orchConstraint.type);
             }
         }
         // Set the objective function
         OrchNumExpr objectiveExpr = new OrchNumExpr(this.objective.getExpr());
-        double[] objCoeffs = new double[objectiveExpr.variablesAndCoefficients.size()];
-        int[] objVars = new int[objectiveExpr.variablesAndCoefficients.size()];
-        int i = 0;
-        //Todo: Check if this is correct
-        for (Entry<NumVar, Double> entry : objectiveExpr.variablesAndCoefficients.entrySet()) {
-            objVars[i] = varToIndex.get(entry.getKey());
-            objCoeffs[i] = entry.getValue();
-            i++;
-        }
-        solver.setObjectiveFunction(objCoeffs, objVars, this.objective.sense == ObjectiveSense.Minimize, objectiveExpr.constant);
+
+        solver.setObjectiveFunction(objectiveExpr.coefficients, objectiveExpr.variables, this.objective.sense == ObjectiveSense.Minimize, objectiveExpr.constant);
 
         HighsStatus highsStatus = solver.solve();
         if (highsStatus == HighsStatus.kOk){
@@ -896,13 +877,17 @@ public class Orchestrate implements Modeler {
      */
     public Constraint rebalanceConstraint(Constraint constraint) {
         OrchConstraint orchConstraint = new OrchConstraint(constraint);
+        LinkedHashMap<Integer, Double> variablesAndCoefficients = new LinkedHashMap<>();
         OrchNumExpr lhs_expr = new OrchNumExpr(orchConstraint.lhs);
         OrchNumExpr rhs_expr = new OrchNumExpr(orchConstraint.rhs);
-        for (Entry<NumVar, Double> entry : rhs_expr.variablesAndCoefficients.entrySet()) {
-            if (!lhs_expr.variablesAndCoefficients.containsKey(entry.getKey())) {
-                lhs_expr.variablesAndCoefficients.put(entry.getKey(), -entry.getValue());
+        for(int i = 0; i < lhs_expr.variables.length; i++) {
+            variablesAndCoefficients.put(lhs_expr.variables[i], lhs_expr.coefficients[i]);
+        }
+        for (int i = 0; i < rhs_expr.variables.length; i++) {
+            if (variablesAndCoefficients.containsKey(rhs_expr.variables[i])) {
+                variablesAndCoefficients.put(rhs_expr.variables[i], variablesAndCoefficients.get(rhs_expr.variables[i]) - rhs_expr.coefficients[i]);
             } else {
-                lhs_expr.variablesAndCoefficients.put(entry.getKey(), lhs_expr.variablesAndCoefficients.get(entry.getKey()) - entry.getValue());
+                variablesAndCoefficients.put(rhs_expr.variables[i], -rhs_expr.coefficients[i]);
             }
         }
         orchConstraint.lhs = lhs_expr;

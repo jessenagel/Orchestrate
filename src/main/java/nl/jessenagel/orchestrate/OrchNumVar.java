@@ -12,6 +12,8 @@ public class OrchNumVar implements NumVar {
      */
     String name;
 
+    private final int index;
+
     /**
      * The lower bound of the numerical variable.
      */
@@ -26,10 +28,11 @@ public class OrchNumVar implements NumVar {
      * Constructs a new OrchNumVar with default bounds and a generated name.
      * The lower bound is set to 0, and the upper bound is set to Double.MAX_VALUE.
      */
-    OrchNumVar() {
+    OrchNumVar(int index) {
         this.name = "NumVar_" + OrchCounter.getNextVarCounter();
         this.lb = 0;
         this.ub = Double.MAX_VALUE;
+        this.index = index;
     }
 
     /**
@@ -124,4 +127,9 @@ public class OrchNumVar implements NumVar {
     public int hashCode() {
         return Objects.hash(name); // Generate hash based on variable name
     }
+
+    public int getIndex() {
+        return index;
+    }
+
 }
