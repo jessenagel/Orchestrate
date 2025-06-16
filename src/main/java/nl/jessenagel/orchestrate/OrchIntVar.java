@@ -35,6 +35,7 @@ public class OrchIntVar implements IntVar {
      * The minimum bound is set to 0, and the maximum bound is set to Integer.MAX_VALUE.
      */
     public OrchIntVar(int index) {
+        this.index = index;
         this.name = "IntVar_" + OrchCounter.getNextVarCounter();
         this.max = Integer.MAX_VALUE;
         this.min = 0;
