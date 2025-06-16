@@ -16,10 +16,15 @@ public class OrchIntExpr implements IntExpr {
     String name;
 
     /**
-     * The list of integer variables in the expression.
+     * An array of coefficients for the integer variables in the expression.
      */
-    LinkedHashMap<IntVar, Integer> variablesAndCoefficients;
+    double[] coefficients;
+    /**
+     * An array of integer variables in the expression.
+     */
+    int[] variables;
 
+    int numberOfVariables;
     /**
      * The constant term in the integer expression.
      */
@@ -51,8 +56,10 @@ public class OrchIntExpr implements IntExpr {
      */
     OrchIntExpr() {
         this.name = "IntExpr_" + OrchCounter.getNextVarCounter();
-        this.variablesAndCoefficients = new LinkedHashMap<>();
+        this.variables = new int[1];
+        this.coefficients = new double[1];
         this.constant = 0;
+        this.numberOfVariables = 0;
     }
 
     /**
@@ -64,21 +71,6 @@ public class OrchIntExpr implements IntExpr {
     OrchIntExpr(IntExpr expr) {
         this.name = expr.getName() + "_" + OrchCounter.getNextVarCounter();
         expr.accept(new OrchIntExprVisitor(this));
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder result = new StringBuilder(" ");
-        for(Entry<IntVar, Integer> entry : variablesAndCoefficients.entrySet()) {
-            if (entry.getValue() < 0) {
-                result.append("- ");
-            } else {
-                result.append("+ ");
-            }
-            result.append(Math.abs(entry.getValue())).append(" ").append(entry.getKey().getName()).append(" ");
-        }
-        result.append("+ ").append(constant);
-        return result.toString();
     }
 
 

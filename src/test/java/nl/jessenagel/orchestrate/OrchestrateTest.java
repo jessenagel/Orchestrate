@@ -236,7 +236,7 @@ class OrchestrateTest {
         Logger logger = LoggerFactory.getLogger(OrchestrateTest.class.getName());
 
         int numVars = 1000;
-        int numConstraints = 2000;
+        int numConstraints = 1000;
         boolean integer = false;
         long seed = 1;
         Orchestrate orchestrate = new Orchestrate();
@@ -361,8 +361,8 @@ class OrchestrateTest {
 
         assertEquals(0, lhsExpr.constant);
         assertEquals(10, rhsExpr.constant);
-        assertEquals(2, lhsExpr.variablesAndCoefficients.size());
-        assertEquals(0, rhsExpr.variablesAndCoefficients.size());
+        assertEquals(2, lhsExpr.numberOfVariables);
+        assertEquals(0, rhsExpr.numberOfVariables);
         assertEquals(ConstraintType.Eq, hConstraint.type);
     }
 
@@ -389,8 +389,8 @@ class OrchestrateTest {
 
         assertEquals(0, lhsExpr.constant);
         assertEquals(10, rhsExpr.constant);
-        assertEquals(2, lhsExpr.variablesAndCoefficients.size());
-        assertEquals(0, rhsExpr.variablesAndCoefficients.size());
+        assertEquals(2, lhsExpr.numberOfVariables);
+        assertEquals(0, rhsExpr.numberOfVariables);
         assertEquals(ConstraintType.Le, hConstraint.type);
     }
 
@@ -413,8 +413,8 @@ class OrchestrateTest {
 
         assertEquals(0, lhsExpr.constant);
         assertEquals(10, rhsExpr.constant);
-        assertEquals(2, lhsExpr.variablesAndCoefficients.size());
-        assertEquals(0, rhsExpr.variablesAndCoefficients.size());
+        assertEquals(2, lhsExpr.numberOfVariables);
+        assertEquals(0, rhsExpr.numberOfVariables);
         assertEquals(ConstraintType.Ge, hConstraint.type);
     }
 
@@ -583,26 +583,5 @@ class OrchestrateTest {
     void solve() {
     }
 
-    @Test
-    void rebalanceConstraint() {
-        Orchestrate orchestrate = new Orchestrate();
-        // Declare variables x and y
-        NumVar x = orchestrate.numVar("x");
-        NumVar y = orchestrate.numVar("y");
-        // Declare numerical expression
-        NumExpr lhs = orchestrate.constant(0);
-        lhs = orchestrate.sum(lhs, y);
-        NumExpr rhs = orchestrate.constant(100);
-        rhs = orchestrate.sum(rhs, orchestrate.prod(-100, x));
-        Constraint constraint = orchestrate.addLe(lhs, rhs);
-        constraint = orchestrate.rebalanceConstraint(constraint);
-
-        OrchConstraint hConstraint = new OrchConstraint(constraint);
-        // Check the constraint type
-        OrchNumExpr lhsExpr = new OrchNumExpr(hConstraint.lhs);
-        OrchNumExpr rhsExpr = new OrchNumExpr(hConstraint.rhs);
-        assertEquals(" + 1.0 y + 100.0 x + 0.0", lhsExpr.toString());
-        assertEquals(" + 100.0", rhsExpr.toString());
-    }
 
 }

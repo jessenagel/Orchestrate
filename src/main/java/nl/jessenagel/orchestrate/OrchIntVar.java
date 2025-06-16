@@ -10,7 +10,10 @@ public class OrchIntVar implements IntVar {
      * The name of the integer variable.
      */
     String name;
-
+    /**
+     * The unique identifier for the integer variable. This is the column index in the model.
+     */
+    int index;
     /**
      * The maximum bound of the integer variable.
      */
@@ -26,11 +29,13 @@ public class OrchIntVar implements IntVar {
      */
     NumVarType type = NumVarType.Int;
 
+
     /**
      * Constructs a new OrchIntVar with default bounds and a generated name.
      * The minimum bound is set to 0, and the maximum bound is set to Integer.MAX_VALUE.
      */
-    public OrchIntVar() {
+    public OrchIntVar(int index) {
+        this.index = index;
         this.name = "IntVar_" + OrchCounter.getNextVarCounter();
         this.max = Integer.MAX_VALUE;
         this.min = 0;
@@ -42,7 +47,7 @@ public class OrchIntVar implements IntVar {
      * @param min The minimum bound of the integer variable.
      * @param max The maximum bound of the integer variable.
      */
-    public OrchIntVar(int min, int max) {
+    public OrchIntVar(int index, int min, int max) {
         this.name = "IntVar_" + OrchCounter.getNextVarCounter();
         this.max = max;
         this.min = min;
@@ -54,7 +59,7 @@ public class OrchIntVar implements IntVar {
      *
      * @param max The maximum bound of the integer variable.
      */
-    public OrchIntVar(int max) {
+    public OrchIntVar(int index, int max) {
         this.name = "IntVar_" + OrchCounter.getNextVarCounter();
         this.max = max;
         this.min = 0;
@@ -191,4 +196,7 @@ public class OrchIntVar implements IntVar {
     }
 
 
+    public int getIndex() {
+        return index;
+    }
 }

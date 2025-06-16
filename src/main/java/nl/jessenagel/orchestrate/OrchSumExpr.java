@@ -3,7 +3,7 @@ package nl.jessenagel.orchestrate;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OrchSumExpr implements NumExpr {
+public class OrchSumExpr implements NumExpr, IntExpr{
     String name;
     List<NumExpr> exprs;
 
@@ -42,5 +42,10 @@ public class OrchSumExpr implements NumExpr {
             result.append(exprs.get(i).toString());
         }
         return result.toString();
+    }
+
+    @Override
+    public void accept(IntExprVisitor visitor) {
+        visitor.visit(this);
     }
 }

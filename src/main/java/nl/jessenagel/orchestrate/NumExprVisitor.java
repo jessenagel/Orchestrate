@@ -7,5 +7,4 @@ public interface NumExprVisitor {
     void visit(OrchNumVar expr);
     void visit(OrchConstraint orchConstraint);
     void visit(OrchSumExpr orchSumExpr);
-    void visit(OrchProdExpr orchProdExpr);
 }
