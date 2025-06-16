@@ -30,19 +30,19 @@ jobs:
           sudo apt-get install -y maven wget
       - name: Download and install jhighs
         run: |
-          if wget https://github.com/jessenagel/JHiGHS/releases/download/v1.0-SNAPSHOT/jhighs-1.0-SNAPSHOT.jar; then
+          if wget https://github.com/jessenagel/JHiGHS/releases/download/v0.1.0/jhighs-0.1.0.jar; then
             echo "Download successful"
-            ls -la jhighs-1.0-SNAPSHOT.jar
+            ls -la jhighs-0.1.0.jar
           else
             echo "Download failed"
             exit 1
           fi
           
           mvn install:install-file \
-            -Dfile=jhighs-1.0-SNAPSHOT.jar \
-            -DgroupId=nl.jessenagel.jhighs \
+            -Dfile=jhighs-0.1.0.jar \
+            -DgroupId=nl.jessenagel.optimization \
             -DartifactId=jhighs \
-            -Dversion=1.0-SNAPSHOT \
+            -Dversion=0.1.0 \
             -Dpackaging=jar
 
       - name: Verify jhighs installation
