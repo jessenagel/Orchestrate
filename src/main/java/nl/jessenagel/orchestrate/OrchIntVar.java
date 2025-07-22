@@ -33,6 +33,8 @@ public class OrchIntVar implements IntVar {
     /**
      * Constructs a new OrchIntVar with default bounds and a generated name.
      * The minimum bound is set to 0, and the maximum bound is set to Integer.MAX_VALUE.
+     *
+     * @param index the index of the IntVar in the Orchestrate Model
      */
     public OrchIntVar(int index) {
         this.index = index;
@@ -44,8 +46,9 @@ public class OrchIntVar implements IntVar {
     /**
      * Constructs a new OrchIntVar with specified minimum and maximum bounds.
      *
-     * @param min The minimum bound of the integer variable.
-     * @param max The maximum bound of the integer variable.
+     * @param index the index of the IntVar in the Orchestrate Model
+     * @param min   The minimum bound of the integer variable.
+     * @param max   The maximum bound of the integer variable.
      */
     public OrchIntVar(int index, int min, int max) {
         this.name = "IntVar_" + OrchCounter.getNextVarCounter();
@@ -57,7 +60,8 @@ public class OrchIntVar implements IntVar {
      * Constructs a new OrchIntVar with a specified maximum bound.
      * The minimum bound is set to 0.
      *
-     * @param max The maximum bound of the integer variable.
+     * @param index the index of the IntVar in the Orchestrate Model
+     * @param max   The maximum bound of the integer variable.
      */
     public OrchIntVar(int index, int max) {
         this.name = "IntVar_" + OrchCounter.getNextVarCounter();
@@ -120,6 +124,19 @@ public class OrchIntVar implements IntVar {
     }
 
     /**
+     * Sets the lower bound of the integer variable. This method is not implemented.
+     *
+     * @param lb The new lower bound of the variable.
+     */
+    @Override
+    public void setLB(double lb) {
+        if (lb > this.max) {
+            throw new IllegalArgumentException("Lower bound cannot be greater than the current upper bound (" + this.max + ").");
+        }
+        this.min = (int) lb;
+    }
+
+    /**
      * Gets the upper bound of the integer variable as a double.
      *
      * @return The upper bound of the variable.
@@ -127,6 +144,19 @@ public class OrchIntVar implements IntVar {
     @Override
     public double getUB() {
         return max;
+    }
+
+    /**
+     * Sets the upper bound of the integer variable. This method is not implemented.
+     *
+     * @param ub The new upper bound of the variable.
+     */
+    @Override
+    public void setUB(double ub) {
+        if (ub < this.min) {
+            throw new IllegalArgumentException("Upper bound cannot be smaller than the current lower bound (" + this.min + ").");
+        }
+        this.max = (int) ub;
     }
 
     /**
@@ -147,32 +177,6 @@ public class OrchIntVar implements IntVar {
     @Override
     public String getName() {
         return name;
-    }
-
-    /**
-     * Sets the lower bound of the integer variable. This method is not implemented.
-     *
-     * @param lb The new lower bound of the variable.
-     */
-    @Override
-    public void setLB(double lb) {
-        if (lb > this.max) {
-            throw new IllegalArgumentException("Lower bound cannot be greater than the current upper bound (" + this.max + ").");
-        }
-        this.min = (int) lb;
-    }
-
-    /**
-     * Sets the upper bound of the integer variable. This method is not implemented.
-     *
-     * @param ub The new upper bound of the variable.
-     */
-    @Override
-    public void setUB(double ub) {
-        if (ub < this.min) {
-            throw new IllegalArgumentException("Upper bound cannot be smaller than the current lower bound (" + this.min + ").");
-        }
-        this.max = (int) ub;
     }
 
     /**
@@ -198,5 +202,10 @@ public class OrchIntVar implements IntVar {
 
     public int getIndex() {
         return index;
+    }
+
+    @Override
+    public void accept(IntExprVisitor visitor) {
+        visitor.visit(this);
     }
 }

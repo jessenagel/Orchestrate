@@ -5,7 +5,7 @@ package nl.jessenagel.orchestrate;
      * This interface extends the {@link NumVar} interface, since
      * an integer variable is a specialized type of numerical variable.
      */
-    public interface IntVar extends NumVar {
+    public interface IntVar extends NumVar, IntExpr{
 
         /**
          * Gets the maximum value of the integer variable.

@@ -33,6 +33,11 @@ public class OrchObjective implements Objective {
         this.name = "Objective_" + OrchCounter.getNextObjCounter();
     }
 
+    @Override
+    public void clearExpr() {
+        this.expr = new OrchNumExpr();
+    }
+
     /**
      * Gets the constant term of the objective's numerical expression.
      *
@@ -53,6 +58,11 @@ public class OrchObjective implements Objective {
         throw new OrchException("Invalid expression type for constant: " + expr.getClass());
     }
 
+    @Override
+    public void setConstant(double v) {
+
+    }
+
     /**
      * Gets the numerical expression of the objective.
      *
@@ -61,6 +71,21 @@ public class OrchObjective implements Objective {
     @Override
     public NumExpr getExpr() {
         return expr;
+    }
+
+    @Override
+    public void setExpr(NumExpr expr) {
+        this.expr =expr;
+    }
+
+    @Override
+    public ObjectiveSense getSense() {
+        return this.sense;
+    }
+
+    @Override
+    public void setSense(ObjectiveSense sense) {
+        this.sense = sense;
     }
 
     /**
