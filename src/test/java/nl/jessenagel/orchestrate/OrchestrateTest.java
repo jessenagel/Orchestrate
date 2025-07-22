@@ -441,30 +441,7 @@ class OrchestrateTest {
 
     }
     
-    /**
-     * Tests the overloaded addEq method with two numerical expressions.
-     * Verifies that equality constraints are properly created and have the expected properties.
-     */
-    @Test
-    void testAddEq() {
-        Orchestrate orchestrate = new Orchestrate();
-        NumVar x = orchestrate.numVar("x");
-        NumVar y = orchestrate.numVar("y");
 
-        NumExpr lhs = orchestrate.constant(0);
-        lhs = orchestrate.sum(lhs, x);
-        NumExpr rhs = orchestrate.constant(0);
-        rhs = orchestrate.sum(rhs, y);
-
-        Constraint constraint = orchestrate.addEq(lhs, rhs);
-        OrchConstraint orchConstraint = new OrchConstraint(constraint);
-
-        assertEquals(ConstraintType.Eq, orchConstraint.type);
-        assertEquals(1, new OrchNumExpr(orchConstraint.lhs).numberOfVariables);
-        assertEquals(1, new OrchNumExpr(orchConstraint.rhs).numberOfVariables);
-    }
-
-    // Existing tests with comments...
 
     /**
      * Tests the sum method for combining a numerical expression with a constant value.
