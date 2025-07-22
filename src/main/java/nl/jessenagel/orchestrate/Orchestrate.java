@@ -8,7 +8,10 @@ import java.util.*;
 import java.util.Map.Entry;
 import nl.jessenagel.jhighs.*;
 /**
- * Orchestrate is the class used to create LP models to be solved using an external olver
+ * Orchestrate is the class used to create (I)LP models to be solved using an external solver
+ * It is the main entry port of the API, and the other objects (NumVar, NumConstraint, etc.) should only be created through the method in this class.
+ * The purpose of this class is to create models of the form min/max obj, s.t. constraints and solve.
+ *
  */
 public class Orchestrate implements Modeler {
     final Logger logger = LoggerFactory.getLogger(Orchestrate.class);
@@ -195,7 +198,7 @@ public class Orchestrate implements Modeler {
 
     /**
      * Adds a fragment to the model.
-     *
+     * <b>This method has not been implemented</b>
      * @param fragment The fragment to add.
      * @return The added fragment.
      */
@@ -207,7 +210,7 @@ public class Orchestrate implements Modeler {
 
     /**
      * Adds multiple fragments to the model.
-     *
+     * <b>This method has not been implemented</b>
      * @param fragment An array of fragments to add.
      * @return An array of added fragments.
      */
@@ -231,7 +234,7 @@ public class Orchestrate implements Modeler {
 
     /**
      * Removes multiple fragments from the model.
-     *
+     * <b>This method has not been implemented</b>
      * @param fragment An array of fragments to remove.
      * @return An array of removed fragments.
      */
@@ -560,11 +563,12 @@ public class Orchestrate implements Modeler {
      * @param i The integer value of the constant.
      * @return The created constant numerical expression.
      */
-    public NumExpr constant(int i) {
-        OrchNumExpr expr = new OrchNumExpr();
-        expr.constant = (double) i;
+    public IntExpr constant(int i) {
+        OrchIntExpr expr = new OrchIntExpr();
+        expr.constant = i;
         return expr;
     }
+
 
     /**
      * Creates a constant numerical expression with a double value.
@@ -839,7 +843,7 @@ public class Orchestrate implements Modeler {
             int i = 0;
 
             if(orchConstraint.type == ConstraintType.Eq) {
-                solver.addConstraint(lhs_expr.coefficients, lhs_expr.variables, rhs_expr.constant, rhs_expr.constant);
+                solver.addConstraint(lhs_expr.coefficients, lhs_expr.variables, rhs_expr.constant,   rhs_expr.constant);
             } else if(orchConstraint.type == ConstraintType.Le) {
                 solver.addConstraint(lhs_expr.coefficients,  lhs_expr.variables, Double.NEGATIVE_INFINITY, rhs_expr.constant);
             } else if(orchConstraint.type == ConstraintType.Ge) {
