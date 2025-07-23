@@ -30,8 +30,6 @@
             <groupId>nl.jessenagel.optimization</groupId>
             <artifactId>jhighs</artifactId>
             <version>0.1.1</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/jhighs-0.1.1.jar</systemPath>
         </dependency>
     </dependencies>
 </project>
