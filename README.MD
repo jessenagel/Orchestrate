@@ -24,7 +24,7 @@ It is intended to be used with the HiGHS solver, an open-source high-performance
 Download the latest release, or clone the repository and build it from source:
 1. Clone the repository:
    ```bash
-   git clone https://github.com/jessenagel/highs-java.git
+   git clone https://github.com/jessenagel/Orchestrate.git
    cd highs-java
 2. Build the project using Maven:
    ```bash
@@ -49,7 +49,7 @@ public class Example {
         solver.addGe(x, y);
         
         //Setting the Objective
-        solver.setObjective(x, ObjectiveSense.Minimize);
+        solver.addMinimize(x);
 
         //Solving the model
         solver.solve();
