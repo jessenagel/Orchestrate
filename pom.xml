@@ -6,7 +6,7 @@
 
     <groupId>nl.jessenagel.optimization</groupId>
     <artifactId>orchestrate</artifactId>
-    <version>0.1.1</version>
+    <version>0.1.2</version>
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
@@ -29,7 +29,15 @@
         <dependency>
             <groupId>nl.jessenagel.optimization</groupId>
             <artifactId>jhighs</artifactId>
-            <version>0.1.1</version>
+            <version>0.1.2</version>
         </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>jessenagel-optimization</id>
+            <name>Jesse Nagel's Optimization Repository</name>
+            <url>https://jessenagel.github.io/Optimization/</url>
+        </repository>
+    </repositories>
 </project>
