@@ -32,4 +32,12 @@
             <version>0.1.2</version>
         </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>jessenagel-optimization</id>
+            <name>Jesse Nagel's Optimization Repository</name>
+            <url>https://jessenagel.github.io/Optimization/</url>
+        </repository>
+    </repositories>
 </project>
