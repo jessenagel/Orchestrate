@@ -25,7 +25,7 @@ Download the latest release, or clone the repository and build it from source:
 1. Clone the repository:
    ```bash
    git clone https://github.com/jessenagel/Orchestrate.git
-   cd highs-java
+   cd Orchestrate
 2. Build the project using Maven:
    ```bash
    mvn clean install
